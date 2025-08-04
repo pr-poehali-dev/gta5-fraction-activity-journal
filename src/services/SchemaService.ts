@@ -287,5 +287,6 @@ class SchemaService {
   }
 }
 
-// Экспортируем синглтон
+// Экспортируем класс и синглтон
+export { SchemaService }
 export const schemaService = new SchemaService()
