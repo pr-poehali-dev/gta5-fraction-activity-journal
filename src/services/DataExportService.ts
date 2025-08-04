@@ -1,4 +1,4 @@
-import { DatabaseService } from './DatabaseService';
+import { databaseService } from './DatabaseService';
 import { dataService } from './DataService';
 import type { User, ActivityLogEntry } from '../types/database';
 
@@ -28,10 +28,10 @@ export interface ExportOptions {
 
 export class DataExportService {
   private dataService = dataService;
-  private databaseService: DatabaseService;
+  private databaseService = databaseService;
 
   constructor() {
-    this.databaseService = DatabaseService.getInstance();
+    // Используем готовые экземпляры сервисов
   }
 
   /**
@@ -287,3 +287,6 @@ export class DataExportService {
     }
   }
 }
+
+// Экспортируем экземпляр сервиса
+export const dataExportService = new DataExportService()

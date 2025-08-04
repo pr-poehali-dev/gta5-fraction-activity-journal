@@ -525,7 +525,8 @@ class DatabaseService {
   }
 }
 
-// Экспортируем синглтон
+// Экспортируем класс и синглтон
+export { DatabaseService }
 export const databaseService = new DatabaseService()
 
 // Инициализируем при импорте
