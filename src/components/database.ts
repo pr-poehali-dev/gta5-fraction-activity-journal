@@ -208,6 +208,47 @@ class UserDatabase {
     return this.factions.find(f => f.id === factionId)
   }
 
+  addFaction(factionData: Omit<Faction, 'id' | 'members' | 'totalMembers' | 'onlineMembers'>): Faction {
+    const maxId = Math.max(0, ...this.factions.map(f => f.id))
+    const newFaction: Faction = {
+      ...factionData,
+      id: maxId + 1,
+      members: [],
+      totalMembers: 0,
+      onlineMembers: 0
+    }
+
+    this.factions.push(newFaction)
+    this.notifyListeners()
+    return newFaction
+  }
+
+  updateFaction(factionId: number, updates: Partial<Omit<Faction, 'id' | 'members' | 'totalMembers' | 'onlineMembers'>>): boolean {
+    const factionIndex = this.factions.findIndex(f => f.id === factionId)
+    if (factionIndex === -1) return false
+
+    this.factions[factionIndex] = { 
+      ...this.factions[factionIndex], 
+      ...updates 
+    }
+    this.notifyListeners()
+    return true
+  }
+
+  removeFaction(factionId: number): boolean {
+    const factionIndex = this.factions.findIndex(f => f.id === factionId)
+    if (factionIndex === -1) return false
+
+    // Удаляем всех участников фракции
+    this.members = this.members.filter(m => m.factionId !== factionId)
+    
+    // Удаляем фракцию
+    this.factions.splice(factionIndex, 1)
+    
+    this.notifyListeners()
+    return true
+  }
+
   // Статистика
   getGlobalStats() {
     const totalMembers = this.members.length

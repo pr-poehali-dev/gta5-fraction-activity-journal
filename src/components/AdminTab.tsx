@@ -7,13 +7,15 @@ import { Separator } from '@/components/ui/separator'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { toast } from '@/hooks/use-toast'
 import Icon from '@/components/ui/icon'
-import { User, UserRole, FactionMember, Warning } from './types'
+import { User, UserRole, FactionMember, Warning, Faction } from './types'
 import { authService, mockUsers } from './auth'
 import { mockFactions } from './mockData'
 import { userDatabase } from './database'
 import AddMemberModal from './AddMemberModal'
 import WarningModal from './WarningModal'
 import UserManagementModal from './UserManagementModal'
+import AddFactionModal from './AddFactionModal'
+import FactionManagementModal from './FactionManagementModal'
 
 interface AdminTabProps {
   currentUser: User
@@ -25,12 +27,21 @@ export default function AdminTab({ currentUser }: AdminTabProps) {
   const [showAddMemberModal, setShowAddMemberModal] = useState(false)
   const [showWarningModal, setShowWarningModal] = useState(false)
   const [showUserManagementModal, setShowUserManagementModal] = useState(false)
+  const [showAddFactionModal, setShowAddFactionModal] = useState(false)
+  const [showFactionManagementModal, setShowFactionManagementModal] = useState(false)
   const [selectedMember, setSelectedMember] = useState<FactionMember | null>(null)
   const [factions, setFactions] = useState(mockFactions)
 
   // Инициализируем базу данных при первом запуске
   useEffect(() => {
     userDatabase.init(mockFactions, mockUsers)
+    
+    // Подписываемся на изменения в базе данных
+    const unsubscribe = userDatabase.subscribe(() => {
+      setFactions(userDatabase.getAllFactions())
+    })
+    
+    return unsubscribe
   }, [])
 
   const canManageUsers = authService.hasPermission('admin')
@@ -123,6 +134,12 @@ export default function AdminTab({ currentUser }: AdminTabProps) {
     setShowWarningModal(true)
   }
 
+  const handleAddFaction = (factionData: Omit<Faction, 'id' | 'members' | 'totalMembers' | 'onlineMembers'>) => {
+    const newFaction = userDatabase.addFaction(factionData)
+    setFactions(userDatabase.getAllFactions())
+    return newFaction
+  }
+
   const adminActions = [
     { 
       id: 'addUser', 
@@ -143,7 +160,14 @@ export default function AdminTab({ currentUser }: AdminTabProps) {
       label: 'Создать фракцию', 
       icon: 'Shield', 
       requiredPermission: 'admin' as const,
-      action: () => toast({ title: 'Функция в разработке', description: 'Создание фракций будет доступно скоро' })
+      action: () => setShowAddFactionModal(true)
+    },
+    { 
+      id: 'manageFactions', 
+      label: 'Управление фракциями', 
+      icon: 'Settings', 
+      requiredPermission: 'admin' as const,
+      action: () => setShowFactionManagementModal(true)
     },
     { 
       id: 'exportReports', 
@@ -453,6 +477,18 @@ export default function AdminTab({ currentUser }: AdminTabProps) {
       <UserManagementModal
         isOpen={showUserManagementModal}
         onClose={() => setShowUserManagementModal(false)}
+        currentUser={currentUser}
+      />
+
+      <AddFactionModal
+        isOpen={showAddFactionModal}
+        onClose={() => setShowAddFactionModal(false)}
+        onAddFaction={handleAddFaction}
+      />
+
+      <FactionManagementModal
+        isOpen={showFactionManagementModal}
+        onClose={() => setShowFactionManagementModal(false)}
         currentUser={currentUser}
       />
     </div>
