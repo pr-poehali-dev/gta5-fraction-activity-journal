@@ -10,6 +10,7 @@ import { dataService } from '@/services/DataService'
 import { databaseService } from '@/services/DatabaseService'
 import { schemaLoader } from '@/services/SchemaLoader'
 import { schemaService } from '@/services/SchemaService'
+import { DatabaseConversionPanel } from './DatabaseConversionPanel'
 
 export default function DatabaseManagement() {
   const [isUsingMock, setIsUsingMock] = useState(true)
@@ -18,6 +19,7 @@ export default function DatabaseManagement() {
   const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'disconnected' | 'error'>('checking')
   const [schemaStatus, setSchemaStatus] = useState<any>(null)
   const [tables, setTables] = useState<string[]>([])
+  const [showConversionPanel, setShowConversionPanel] = useState(false)
   const [schemaInfo, setSchemaInfo] = useState<any>(null)
 
   useEffect(() => {
@@ -230,13 +232,14 @@ export default function DatabaseManagement() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Icon name="Database" size={20} />
-          Управление базой данных
-        </CardTitle>
-      </CardHeader>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Icon name="Database" size={20} />
+            Управление базой данных
+          </CardTitle>
+        </CardHeader>
       
       <CardContent className="space-y-6">
         {/* Статус подключения */}
@@ -382,6 +385,15 @@ export default function DatabaseManagement() {
                 <Icon name="RotateCcw" size={16} className="mr-2" />
                 {isLoading ? 'Пересоздание...' : 'Пересоздать схему'}
               </Button>
+
+              <Button
+                onClick={() => setShowConversionPanel(!showConversionPanel)}
+                variant="outline"
+                className="w-full"
+              >
+                <Icon name="Globe" size={16} className="mr-2" />
+                {showConversionPanel ? 'Скрыть конвертацию UTF-8' : 'Конвертировать в UTF-8'}
+              </Button>
             </>
           )}
         </div>
@@ -422,7 +434,13 @@ export default function DatabaseManagement() {
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      {/* Панель конвертации UTF-8 */}
+      {showConversionPanel && isConnected && (
+        <DatabaseConversionPanel />
+      )}
+    </div>
   )
 }
