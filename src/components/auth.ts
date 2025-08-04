@@ -209,5 +209,4 @@ export class AuthService {
 
 export const authService = new AuthService()
 
-// Auto-login as admin for demo
-authService.autoLogin('admin')
+// Auto-login removed - now requires proper authentication

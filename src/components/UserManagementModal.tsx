@@ -93,6 +93,7 @@ export default function UserManagementModal({ isOpen, onClose, currentUser }: Us
               filters={filters}
               onFilterChange={setFilters}
               actions={actions}
+              currentUser={currentUser}
             />
           </TabsContent>
 

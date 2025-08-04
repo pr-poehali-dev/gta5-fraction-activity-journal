@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import Icon from '@/components/ui/icon'
-import { FactionMember, ActivityStatus } from '../types'
+import { FactionMember, ActivityStatus, User } from '../types'
 import { FilterState, UserManagementActions } from './types'
 import { getStatusColor, formatTimeAgo } from './utils'
 import StatusToggle from '../StatusToggle'
@@ -16,13 +16,15 @@ interface FactionMembersTabProps {
   filters: FilterState
   onFilterChange: (filters: FilterState) => void
   actions: UserManagementActions
+  currentUser: User
 }
 
 export default function FactionMembersTab({ 
   members, 
   filters, 
   onFilterChange, 
-  actions 
+  actions,
+  currentUser
 }: FactionMembersTabProps) {
   const filteredMembers = members.filter(member => {
     const matchesSearch = member.name.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
@@ -111,6 +113,8 @@ export default function FactionMembersTab({
                     <StatusToggle
                       currentStatus={member.status}
                       onStatusChange={(newStatus) => actions.onStatusChange(member.id, newStatus)}
+                      currentUser={currentUser}
+                      targetMemberId={member.id}
                       size="sm"
                     />
                     
