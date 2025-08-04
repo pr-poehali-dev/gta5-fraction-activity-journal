@@ -272,5 +272,6 @@ class DataService {
   }
 }
 
-// Экспортируем синглтон
+// Экспортируем класс и синглтон
+export { DataService }
 export const dataService = new DataService()

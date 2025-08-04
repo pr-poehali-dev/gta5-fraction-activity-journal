@@ -1,5 +1,5 @@
 import { DatabaseService } from './DatabaseService';
-import { DataService } from './DataService';
+import { dataService } from './DataService';
 import type { User, ActivityLogEntry } from '../types/database';
 
 export interface DatabaseSnapshot {
@@ -27,11 +27,10 @@ export interface ExportOptions {
 }
 
 export class DataExportService {
-  private dataService: DataService;
+  private dataService = dataService;
   private databaseService: DatabaseService;
 
   constructor() {
-    this.dataService = DataService.getInstance();
     this.databaseService = DatabaseService.getInstance();
   }
 
@@ -41,7 +40,7 @@ export class DataExportService {
   async createFullSnapshot(): Promise<DatabaseSnapshot> {
     try {
       const users = await this.dataService.getAllUsers();
-      const activities = await this.dataService.getAllActivities();
+      const activities = await this.dataService.getActivityLogs();
 
       // Подсчитываем метаданные
       const activeUsers = users.filter(user => user.status === 'active').length;
@@ -84,7 +83,7 @@ export class DataExportService {
       }
 
       if (options.includeActivities) {
-        activities = await this.dataService.getAllActivities();
+        activities = await this.dataService.getActivityLogs();
 
         // Фильтруем по датам если указан диапазон
         if (options.dateRange) {
@@ -249,7 +248,7 @@ export class DataExportService {
   }> {
     try {
       const users = await this.dataService.getAllUsers();
-      const activities = await this.dataService.getAllActivities();
+      const activities = await this.dataService.getActivityLogs();
 
       // Статистика пользователей
       const userRoles: Record<string, number> = {};
