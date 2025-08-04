@@ -11,6 +11,8 @@ import FactionMembersCard from './admin/FactionMembersCard'
 import AccessDeniedCard from './admin/AccessDeniedCard'
 import AdminModalsWrapper from './admin/AdminModalsWrapper'
 import PermissionsManagementModal from './admin/PermissionsManagementModal'
+import { DataExportPanel } from './admin/DataExportPanel'
+import { DatabaseManagement } from './admin/DatabaseManagement'
 
 interface AdminTabProps {
   currentUser: User
@@ -26,6 +28,8 @@ export default function AdminTab({ currentUser }: AdminTabProps) {
   const [showFactionManagementModal, setShowFactionManagementModal] = useState(false)
   const [showActivityLogModal, setShowActivityLogModal] = useState(false)
   const [showPermissionsModal, setShowPermissionsModal] = useState(false)
+  const [showDataExportPanel, setShowDataExportPanel] = useState(false)
+  const [showDatabaseManagement, setShowDatabaseManagement] = useState(false)
   const [selectedMember, setSelectedMember] = useState<FactionMember | null>(null)
   const [factions, setFactions] = useState(mockFactions)
 
@@ -129,17 +133,11 @@ export default function AdminTab({ currentUser }: AdminTabProps) {
   }
 
   const handleExportReports = () => {
-    toast({ 
-      title: 'Экспорт запущен', 
-      description: 'Отчеты будут готовы через несколько минут' 
-    })
+    setShowDataExportPanel(true)
   }
 
   const handleBackupData = () => {
-    toast({ 
-      title: 'Backup создан', 
-      description: 'Резервная копия сохранена успешно' 
-    })
+    setShowDatabaseManagement(true)
   }
 
   if (!canManageUsers) {
@@ -175,6 +173,38 @@ export default function AdminTab({ currentUser }: AdminTabProps) {
         factions={factions}
         onOpenWarningModal={openWarningModal}
       />
+
+      {/* Панель экспорта данных */}
+      {showDataExportPanel && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold">Экспорт данных</h2>
+            <button
+              onClick={() => setShowDataExportPanel(false)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              ✕ Закрыть
+            </button>
+          </div>
+          <DataExportPanel />
+        </div>
+      )}
+
+      {/* Управление базой данных */}
+      {showDatabaseManagement && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold">Управление базой данных</h2>
+            <button
+              onClick={() => setShowDatabaseManagement(false)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              ✕ Закрыть
+            </button>
+          </div>
+          <DatabaseManagement />
+        </div>
+      )}
 
       <AdminModalsWrapper
         showAddMemberModal={showAddMemberModal}

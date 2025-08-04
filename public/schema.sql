@@ -172,12 +172,13 @@ CREATE TABLE IF NOT EXISTS user_sessions (
 ALTER TABLE users ADD CONSTRAINT fk_users_faction 
     FOREIGN KEY (faction_id) REFERENCES factions(id) ON DELETE SET NULL;
 
--- Создание мастер-пользователя по умолчанию
+-- Создание системных пользователей по умолчанию
+
+-- Мастер-пользователь (основной администратор)
 INSERT INTO users (
-    id, username, name, password, role, permission, permissions, 
+    username, name, password, role, permission, permissions, 
     is_blocked, is_online, created_at
 ) VALUES (
-    1, 
     'master', 
     'Главный Администратор', 
     'master2024!', 
@@ -192,12 +193,11 @@ INSERT INTO users (
     permissions = VALUES(permissions),
     updated_at = NOW();
 
--- Создание наблюдателя по умолчанию
+-- Гость-наблюдатель (только для просмотра)
 INSERT INTO users (
-    id, username, name, password, role, permission, permissions, 
+    username, name, password, role, permission, permissions, 
     is_blocked, is_online, created_at
 ) VALUES (
-    2, 
     'observer_guest', 
     'Гость Наблюдатель', 
     '', 
