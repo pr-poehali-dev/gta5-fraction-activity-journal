@@ -10,6 +10,7 @@ import UserManagementCard from './admin/UserManagementCard'
 import FactionMembersCard from './admin/FactionMembersCard'
 import AccessDeniedCard from './admin/AccessDeniedCard'
 import AdminModalsWrapper from './admin/AdminModalsWrapper'
+import PermissionsManagementModal from './admin/PermissionsManagementModal'
 
 interface AdminTabProps {
   currentUser: User
@@ -24,6 +25,7 @@ export default function AdminTab({ currentUser }: AdminTabProps) {
   const [showAddFactionModal, setShowAddFactionModal] = useState(false)
   const [showFactionManagementModal, setShowFactionManagementModal] = useState(false)
   const [showActivityLogModal, setShowActivityLogModal] = useState(false)
+  const [showPermissionsModal, setShowPermissionsModal] = useState(false)
   const [selectedMember, setSelectedMember] = useState<FactionMember | null>(null)
   const [factions, setFactions] = useState(mockFactions)
 
@@ -155,6 +157,7 @@ export default function AdminTab({ currentUser }: AdminTabProps) {
           onShowActivityLog={() => setShowActivityLogModal(true)}
           onExportReports={handleExportReports}
           onBackupData={handleBackupData}
+          onManagePermissions={() => setShowPermissionsModal(true)}
         />
 
         <SystemNotificationsCard />
@@ -193,6 +196,12 @@ export default function AdminTab({ currentUser }: AdminTabProps) {
         onAddWarning={handleAddWarning}
         onRemoveWarning={handleRemoveWarning}
         onAddFaction={handleAddFaction}
+      />
+
+      <PermissionsManagementModal
+        isOpen={showPermissionsModal}
+        onClose={() => setShowPermissionsModal(false)}
+        currentUser={currentUser}
       />
     </div>
   )
