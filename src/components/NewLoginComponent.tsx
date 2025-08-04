@@ -10,7 +10,6 @@ import { toast } from '@/hooks/use-toast'
 import Icon from '@/components/ui/icon'
 import { User } from './types'
 import { userDatabase } from './database'
-import MasterLoginInfo from './MasterLoginInfo'
 
 interface NewLoginComponentProps {
   onLogin: (user: User) => void
@@ -386,9 +385,6 @@ export default function NewLoginComponent({ onLogin, onVKAuth, onRegister }: New
           </Tabs>
         </CardContent>
       </Card>
-
-      {/* Данные мастера системы */}
-      <MasterLoginInfo />
     </div>
   )
 }

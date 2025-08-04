@@ -1,19 +1,8 @@
 import { toast } from '@/hooks/use-toast'
 import { ActivityStatus, User } from '../types'
 import { userDatabase } from '../database'
-import { authService } from '../auth'
 
 export const handleStatusChange = (memberId: number, newStatus: ActivityStatus) => {
-  // Проверка прав доступа
-  if (!authService.canAccessFeature('updateMemberStatus')) {
-    toast({
-      title: 'Доступ запрещен',
-      description: 'У вас нет прав для изменения статуса участников',
-      variant: 'destructive'
-    })
-    return
-  }
-
   if (userDatabase.updateMemberStatus(memberId, newStatus)) {
     toast({
       title: 'Статус обновлен',
@@ -23,16 +12,6 @@ export const handleStatusChange = (memberId: number, newStatus: ActivityStatus) 
 }
 
 export const handleRemoveMember = (memberId: number, memberName: string) => {
-  // Проверка прав доступа
-  if (!authService.hasPermission('admin')) {
-    toast({
-      title: 'Доступ запрещен',
-      description: 'У вас нет прав для удаления участников',
-      variant: 'destructive'
-    })
-    return
-  }
-
   if (userDatabase.removeMember(memberId)) {
     toast({
       title: 'Участник удален',
@@ -42,16 +21,6 @@ export const handleRemoveMember = (memberId: number, memberName: string) => {
 }
 
 export const handleRemoveUser = (userId: number, userName: string, users: User[], currentUser: User) => {
-  // Проверка прав доступа
-  if (!authService.hasPermission('system')) {
-    toast({
-      title: 'Доступ запрещен',
-      description: 'У вас нет прав для удаления пользователей',
-      variant: 'destructive'
-    })
-    return
-  }
-
   // Проверяем, что не пытаемся удалить самого себя
   if (userId === currentUser.id) {
     toast({
@@ -98,20 +67,6 @@ export const handleRemoveUser = (userId: number, userName: string, users: User[]
 }
 
 export const loadUserManagementData = () => {
-  // Проверка базовых прав доступа для загрузки данных
-  if (!authService.hasPermission('admin')) {
-    toast({
-      title: 'Доступ запрещен',
-      description: 'У вас нет прав для просмотра управления пользователями',
-      variant: 'destructive'
-    })
-    return {
-      members: [],
-      users: [],
-      stats: { totalMembers: 0, onlineMembers: 0, afkMembers: 0, offlineMembers: 0, totalWarnings: 0, activeUsers: 0, totalUsers: 0, onlinePercentage: 0 }
-    }
-  }
-
   const allMembers = userDatabase.getAllMembers().map(member => ({
     ...member,
     factionName: userDatabase.getFactionById(member.factionId)?.name || 'Неизвестная фракция'

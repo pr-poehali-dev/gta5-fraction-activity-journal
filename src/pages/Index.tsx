@@ -10,7 +10,6 @@ import { mockFactions, mockNotifications } from '@/components/mockData'
 import { getStatusText } from '@/components/utils'
 import { authService } from '@/components/auth'
 import { userDatabase } from '@/components/database'
-import AuthGuard from '@/components/AuthGuard'
 import VKAuthComponent from '@/components/VKAuthComponent'
 import RegistrationModal from '@/components/RegistrationModal'
 import NewLoginComponent from '@/components/NewLoginComponent'
@@ -158,19 +157,6 @@ export default function Index() {
       return
     }
 
-    // Для observer - можно менять статус только себе
-    if (currentUser?.role === 'observer') {
-      const member = userDatabase.getMemberById(memberId)
-      if (!member || member.userId !== currentUser.id) {
-        toast({
-          title: 'Доступ запрещен',
-          description: 'Наблюдатель может изменять статус только себе',
-          variant: 'destructive'
-        })
-        return
-      }
-    }
-
     // Обновляем статус в базе данных
     if (userDatabase.updateMemberStatus(memberId, newStatus)) {
       const member = userDatabase.getMemberById(memberId)
@@ -251,20 +237,19 @@ export default function Index() {
   }
 
   return (
-    <AuthGuard currentUser={currentUser}>
-      <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
-        <div className="container mx-auto p-6 space-y-8">
-          <Header
-            notifications={notifications}
-            unreadNotifications={unreadNotifications}
-            criticalNotifications={criticalNotifications}
-            showNotifications={showNotifications}
-            setShowNotifications={setShowNotifications}
-            markNotificationAsRead={markNotificationAsRead}
-            markAllAsRead={markAllAsRead}
-            currentUser={currentUser!}
-            onLogout={handleLogout}
-          />
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+      <div className="container mx-auto p-6 space-y-8">
+        <Header
+          notifications={notifications}
+          unreadNotifications={unreadNotifications}
+          criticalNotifications={criticalNotifications}
+          showNotifications={showNotifications}
+          setShowNotifications={setShowNotifications}
+          markNotificationAsRead={markNotificationAsRead}
+          markAllAsRead={markAllAsRead}
+          currentUser={currentUser}
+          onLogout={handleLogout}
+        />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-5 lg:w-[750px] mx-auto">
@@ -329,7 +314,6 @@ export default function Index() {
               <ActivityTab
                 factions={userDatabase.getAllFactions()}
                 updateMemberStatus={updateMemberStatus}
-                currentUser={currentUser}
               />
             </TabsContent>
           )}
@@ -339,7 +323,6 @@ export default function Index() {
               <FactionsTab 
                 factions={userDatabase.getAllFactions()} 
                 updateMemberStatus={canViewActivity ? updateMemberStatus : undefined}
-                currentUser={currentUser}
               />
             </TabsContent>
           )}
@@ -359,15 +342,12 @@ export default function Index() {
 
           {canAccessAdmin && (
             <TabsContent value="admin" className="space-y-6">
-              <AuthGuard currentUser={currentUser} requiredPermission="admin">
-                <AdminTab currentUser={currentUser!} />
-              </AuthGuard>
+              <AdminTab currentUser={currentUser} />
             </TabsContent>
           )}
         </Tabs>
-        </div>
-        <Toaster />
       </div>
-    </AuthGuard>
+      <Toaster />
+    </div>
   )
 }
