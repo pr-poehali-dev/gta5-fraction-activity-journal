@@ -21,6 +21,7 @@ import ActivityTab from '@/components/ActivityTab'
 import FactionsTab from '@/components/FactionsTab'
 import NotificationsTab from '@/components/NotificationsTab'
 import AdminTab from '@/components/AdminTab'
+import AccountManager from '@/components/account/AccountManager'
 
 interface VKUser {
   id: number
@@ -267,7 +268,7 @@ export default function Index() {
           />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 lg:w-[750px] mx-auto">
+          <TabsList className="grid w-full grid-cols-6 lg:w-[900px] mx-auto">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Icon name="BarChart3" size={16} />
               Обзор
@@ -303,6 +304,15 @@ export default function Index() {
                 </Badge>
               )}
               {!canViewNotifications && <Icon name="Lock" size={12} />}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="accounts" 
+              className="flex items-center gap-2"
+              disabled={!canViewFactions}
+            >
+              <Icon name="UserCog" size={16} />
+              Аккаунты
+              {!canViewFactions && <Icon name="Lock" size={12} />}
             </TabsTrigger>
             <TabsTrigger 
               value="admin" 
@@ -354,6 +364,12 @@ export default function Index() {
                 markNotificationAsRead={markNotificationAsRead}
                 markAllAsRead={markAllAsRead}
               />
+            </TabsContent>
+          )}
+
+          {canViewFactions && (
+            <TabsContent value="accounts" className="space-y-6">
+              <AccountManager />
             </TabsContent>
           )}
 
