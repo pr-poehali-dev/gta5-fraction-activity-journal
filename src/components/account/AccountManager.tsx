@@ -151,12 +151,12 @@ export default function AccountManager() {
   const storageStats = accountStorageService.getStorageStats()
 
   return (
-    <div className=\"space-y-6\">
+    <div className="space-y-6">
       {/* Заголовок и статистика */}
-      <div className=\"flex justify-between items-center\">
+      <div className="flex justify-between items-center"
         <div>
-          <h2 className=\"text-2xl font-bold\">Управление аккаунтами</h2>
-          <p className=\"text-muted-foreground\">
+          <h2 className="text-2xl font-bold"Управление аккаунтами</h2>
+          <p className="text-muted-foreground"
             Всего: {storageStats.totalAccounts} | 
             Активных: {storageStats.activeAccounts} | 
             Онлайн: {storageStats.onlineAccounts}
@@ -166,7 +166,7 @@ export default function AccountManager() {
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Icon name=\"Plus\" className=\"mr-2 h-4 w-4\" />
+              <Icon name=\"Plus\" className="mr-2 h-4 w-4\" />
               Добавить аккаунт
             </Button>
           </DialogTrigger>
@@ -178,22 +178,22 @@ export default function AccountManager() {
               </DialogDescription>
             </DialogHeader>
             
-            <div className=\"grid gap-4 py-4\">
-              <div className=\"grid grid-cols-4 items-center gap-4\">
-                <Label htmlFor=\"name\" className=\"text-right\">
+            <div className="grid gap-4 py-4"
+              <div className="grid grid-cols-4 items-center gap-4"
+                <Label htmlFor=\"name\" className="text-right"
                   Имя *
                 </Label>
                 <Input
                   id=\"name\"
                   value={newAccount.name}
                   onChange={(e) => setNewAccount({ ...newAccount, name: e.target.value })}
-                  className=\"col-span-3\"
+                  className="col-span-3\"
                   placeholder=\"Введите имя аккаунта\"
                 />
               </div>
               
-              <div className=\"grid grid-cols-4 items-center gap-4\">
-                <Label htmlFor=\"password\" className=\"text-right\">
+              <div className="grid grid-cols-4 items-center gap-4"
+                <Label htmlFor=\"password\" className="text-right"
                   Пароль *
                 </Label>
                 <Input
@@ -201,65 +201,65 @@ export default function AccountManager() {
                   type=\"password\"
                   value={newAccount.password}
                   onChange={(e) => setNewAccount({ ...newAccount, password: e.target.value })}
-                  className=\"col-span-3\"
+                  className="col-span-3\"
                   placeholder=\"Введите пароль\"
                 />
               </div>
               
-              <div className=\"grid grid-cols-4 items-center gap-4\">
-                <Label htmlFor=\"faction\" className=\"text-right\">
+              <div className="grid grid-cols-4 items-center gap-4"
+                <Label htmlFor=\"faction\" className="text-right"
                   Фракция
                 </Label>
                 <Input
                   id=\"faction\"
                   value={newAccount.faction}
                   onChange={(e) => setNewAccount({ ...newAccount, faction: e.target.value })}
-                  className=\"col-span-3\"
+                  className="col-span-3\"
                   placeholder=\"Название фракции\"
                 />
               </div>
               
-              <div className=\"grid grid-cols-4 items-center gap-4\">
-                <Label htmlFor=\"rank\" className=\"text-right\">
+              <div className="grid grid-cols-4 items-center gap-4"
+                <Label htmlFor=\"rank\" className="text-right"
                   Ранг
                 </Label>
                 <Input
                   id=\"rank\"
                   value={newAccount.rank}
                   onChange={(e) => setNewAccount({ ...newAccount, rank: e.target.value })}
-                  className=\"col-span-3\"
+                  className="col-span-3\"
                   placeholder=\"Ранг в фракции\"
                 />
               </div>
               
-              <div className=\"grid grid-cols-4 items-center gap-4\">
-                <Label htmlFor=\"status\" className=\"text-right\">
+              <div className="grid grid-cols-4 items-center gap-4"
+                <Label htmlFor=\"status\" className="text-right"
                   Статус
                 </Label>
                 <Select
                   value={newAccount.status}
                   onValueChange={(value: ActivityStatus) => setNewAccount({ ...newAccount, status: value })}
                 >
-                  <SelectTrigger className=\"col-span-3\">
+                  <SelectTrigger className="col-span-3"
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value=\"offline\">Офлайн</SelectItem>
-                    <SelectItem value=\"online\">Онлайн</SelectItem>
-                    <SelectItem value=\"afk\">AFK</SelectItem>
+                    <SelectItem value=\"offline"Офлайн</SelectItem>
+                    <SelectItem value=\"online"Онлайн</SelectItem>
+                    <SelectItem value=\"afk"AFK</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
-              <div className=\"grid grid-cols-4 items-center gap-4\">
-                <Label htmlFor=\"notes\" className=\"text-right\">
+              <div className="grid grid-cols-4 items-center gap-4"
+                <Label htmlFor=\"notes\" className="text-right"
                   Заметки
                 </Label>
                 <Input
                   id=\"notes\"
                   value={newAccount.notes}
                   onChange={(e) => setNewAccount({ ...newAccount, notes: e.target.value })}
-                  className=\"col-span-3\"
+                  className="col-span-3\"
                   placeholder=\"Дополнительная информация\"
                 />
               </div>
@@ -278,17 +278,17 @@ export default function AccountManager() {
       </div>
 
       {/* Список аккаунтов */}
-      <div className=\"grid gap-4\">
+      <div className="grid gap-4"
         {accounts.length === 0 ? (
           <Card>
-            <CardContent className=\"p-6 text-center\">
-              <Icon name=\"Users\" className=\"h-12 w-12 mx-auto mb-4 text-muted-foreground\" />
-              <h3 className=\"text-lg font-semibold mb-2\">Нет сохраненных аккаунтов</h3>
-              <p className=\"text-muted-foreground mb-4\">
+            <CardContent className="p-6 text-center"
+              <Icon name=\"Users\" className="h-12 w-12 mx-auto mb-4 text-muted-foreground\" />
+              <h3 className="text-lg font-semibold mb-2"Нет сохраненных аккаунтов</h3>
+              <p className="text-muted-foreground mb-4"
                 Добавьте первый аккаунт для начала работы
               </p>
               <Button onClick={() => setIsAddDialogOpen(true)}>
-                <Icon name=\"Plus\" className=\"mr-2 h-4 w-4\" />
+                <Icon name=\"Plus\" className="mr-2 h-4 w-4\" />
                 Добавить аккаунт
               </Button>
             </CardContent>
@@ -300,35 +300,35 @@ export default function AccountManager() {
             
             return (
               <Card key={account.id} className={`${!account.isActive ? 'opacity-50' : ''}`}>
-                <CardHeader className=\"pb-3\">
-                  <div className=\"flex justify-between items-start\">
-                    <div className=\"flex items-center space-x-3\">
+                <CardHeader className="pb-3"
+                  <div className="flex justify-between items-start"
+                    <div className="flex items-center space-x-3"
                       <div className={`w-3 h-3 rounded-full ${getStatusColor(currentStatus)}`} />
                       <div>
-                        <CardTitle className=\"text-lg\">{account.name}</CardTitle>
-                        <div className=\"flex items-center space-x-2 text-sm text-muted-foreground\">
+                        <CardTitle className="text-lg"{account.name}</CardTitle>
+                        <div className="flex items-center space-x-2 text-sm text-muted-foreground"
                           {account.faction && (
-                            <Badge variant=\"outline\">{account.faction}</Badge>
+                            <Badge variant=\"outline"{account.faction}</Badge>
                           )}
                           {account.rank && (
-                            <Badge variant=\"secondary\">{account.rank}</Badge>
+                            <Badge variant=\"secondary"{account.rank}</Badge>
                           )}
                         </div>
                       </div>
                     </div>
                     
-                    <div className=\"flex items-center space-x-2\">
+                    <div className="flex items-center space-x-2"
                       <Select
                         value={currentStatus}
                         onValueChange={(value: ActivityStatus) => handleStatusChange(account.id, value)}
                       >
-                        <SelectTrigger className=\"w-32\">
+                        <SelectTrigger className="w-32"
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value=\"offline\">Офлайн</SelectItem>
-                          <SelectItem value=\"online\">Онлайн</SelectItem>
-                          <SelectItem value=\"afk\">AFK</SelectItem>
+                          <SelectItem value=\"offline"Офлайн</SelectItem>
+                          <SelectItem value=\"online"Онлайн</SelectItem>
+                          <SelectItem value=\"afk"AFK</SelectItem>
                         </SelectContent>
                       </Select>
                       
@@ -337,23 +337,23 @@ export default function AccountManager() {
                         size=\"sm\"
                         onClick={() => handleDeleteAccount(account.id)}
                       >
-                        <Icon name=\"Trash2\" className=\"h-4 w-4\" />
+                        <Icon name=\"Trash2\" className="h-4 w-4\" />
                       </Button>
                     </div>
                   </div>
                 </CardHeader>
                 
                 <CardContent>
-                  <div className=\"grid grid-cols-2 md:grid-cols-4 gap-4 text-sm\">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm"
                     <div>
-                      <p className=\"text-muted-foreground\">Статус</p>
+                      <p className="text-muted-foreground"Статус</p>
                       <Badge className={getStatusColor(currentStatus)}>
                         {getStatusText(currentStatus)}
                       </Badge>
                     </div>
                     
                     <div>
-                      <p className=\"text-muted-foreground\">Последний вход</p>
+                      <p className="text-muted-foreground"Последний вход</p>
                       <p>
                         {accountStatus?.lastSeen 
                           ? accountStatus.lastSeen.toLocaleString('ru-RU')
@@ -363,18 +363,18 @@ export default function AccountManager() {
                     </div>
                     
                     <div>
-                      <p className=\"text-muted-foreground\">Обновлен</p>
+                      <p className="text-muted-foreground"Обновлен</p>
                       <p>{account.lastUpdated.toLocaleString('ru-RU')}</p>
                     </div>
                     
-                    <div className=\"flex space-x-2\">
+                    <div className="flex space-x-2"
                       {currentStatus === 'offline' ? (
                         <Button
                           size=\"sm\"
                           variant=\"outline\"
                           onClick={() => handleStartSession(account.id)}
                         >
-                          <Icon name=\"Play\" className=\"h-4 w-4 mr-1\" />
+                          <Icon name=\"Play\" className="h-4 w-4 mr-1\" />
                           Войти
                         </Button>
                       ) : (
@@ -383,7 +383,7 @@ export default function AccountManager() {
                           variant=\"outline\"
                           onClick={() => handleEndSession(account.id)}
                         >
-                          <Icon name=\"Pause\" className=\"h-4 w-4 mr-1\" />
+                          <Icon name=\"Pause\" className="h-4 w-4 mr-1\" />
                           Выйти
                         </Button>
                       )}
@@ -391,8 +391,8 @@ export default function AccountManager() {
                   </div>
                   
                   {account.notes && (
-                    <div className=\"mt-4 p-3 bg-muted rounded-md\">
-                      <p className=\"text-sm\">{account.notes}</p>
+                    <div className="mt-4 p-3 bg-muted rounded-md"
+                      <p className="text-sm"{account.notes}</p>
                     </div>
                   )}
                 </CardContent>
