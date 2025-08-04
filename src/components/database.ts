@@ -1,10 +1,18 @@
 import { FactionMember, Warning, User, Faction, ActivityStatus } from './types'
 
+export interface ActivityLog {
+  userId: number
+  action: string
+  details: string
+  timestamp: Date
+}
+
 // Центральная база данных всех пользователей системы
 class UserDatabase {
   private members: FactionMember[] = []
   private users: User[] = []
   private factions: Faction[] = []
+  private activityLogs: ActivityLog[] = []
   private listeners: (() => void)[] = []
 
   // Инициализация с демо-данными
@@ -282,6 +290,21 @@ class UserDatabase {
         ...member,
         factionName: this.factions.find(f => f.id === member.factionId)?.name || 'Неизвестная фракция'
       }))
+  }
+
+  // Журнал активности
+  getAllActivityLogs(): ActivityLog[] {
+    return [...this.activityLogs].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+  }
+
+  addActivityLog(log: ActivityLog): void {
+    this.activityLogs.push(log)
+    this.notifyListeners()
+  }
+
+  clearActivityLogs(): void {
+    this.activityLogs = []
+    this.notifyListeners()
   }
 
   // Экспорт данных

@@ -31,8 +31,18 @@ export default function UserManagementModal({ isOpen, onClose, currentUser }: Us
   useEffect(() => {
     if (isOpen) {
       loadData()
+      
+      // Обновление в реальном времени каждые 2 секунды
+      const interval = setInterval(() => {
+        loadData()
+      }, 2000)
+      
       const unsubscribe = userDatabase.subscribe(loadData)
-      return unsubscribe
+      
+      return () => {
+        clearInterval(interval)
+        unsubscribe()
+      }
     }
   }, [isOpen])
 

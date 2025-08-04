@@ -16,6 +16,7 @@ import WarningModal from './WarningModal'
 import UserManagementModal from './UserManagementModal'
 import AddFactionModal from './AddFactionModal'
 import FactionManagementModal from './FactionManagementModal'
+import ActivityLogModal from './ActivityLogModal'
 
 interface AdminTabProps {
   currentUser: User
@@ -29,6 +30,7 @@ export default function AdminTab({ currentUser }: AdminTabProps) {
   const [showUserManagementModal, setShowUserManagementModal] = useState(false)
   const [showAddFactionModal, setShowAddFactionModal] = useState(false)
   const [showFactionManagementModal, setShowFactionManagementModal] = useState(false)
+  const [showActivityLogModal, setShowActivityLogModal] = useState(false)
   const [selectedMember, setSelectedMember] = useState<FactionMember | null>(null)
   const [factions, setFactions] = useState(mockFactions)
 
@@ -168,6 +170,13 @@ export default function AdminTab({ currentUser }: AdminTabProps) {
       icon: 'Settings', 
       requiredPermission: 'admin' as const,
       action: () => setShowFactionManagementModal(true)
+    },
+    { 
+      id: 'activityLog', 
+      label: 'Журнал активности', 
+      icon: 'Activity', 
+      requiredPermission: 'moderate' as const,
+      action: () => setShowActivityLogModal(true)
     },
     { 
       id: 'exportReports', 
@@ -489,6 +498,12 @@ export default function AdminTab({ currentUser }: AdminTabProps) {
       <FactionManagementModal
         isOpen={showFactionManagementModal}
         onClose={() => setShowFactionManagementModal(false)}
+        currentUser={currentUser}
+      />
+
+      <ActivityLogModal
+        isOpen={showActivityLogModal}
+        onClose={() => setShowActivityLogModal(false)}
         currentUser={currentUser}
       />
     </div>

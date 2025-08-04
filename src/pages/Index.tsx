@@ -10,7 +10,8 @@ import { mockFactions, mockNotifications } from '@/components/mockData'
 import { getStatusText } from '@/components/utils'
 import { authService } from '@/components/auth'
 import { userDatabase } from '@/components/database'
-import LoginComponent from '@/components/LoginComponent'
+import VKAuthComponent from '@/components/VKAuthComponent'
+import RegistrationModal from '@/components/RegistrationModal'
 import Header from '@/components/Header'
 import OverviewTab from '@/components/OverviewTab'
 import ActivityTab from '@/components/ActivityTab'
@@ -18,8 +19,18 @@ import FactionsTab from '@/components/FactionsTab'
 import NotificationsTab from '@/components/NotificationsTab'
 import AdminTab from '@/components/AdminTab'
 
+interface VKUser {
+  id: number
+  first_name: string
+  last_name: string
+  photo_200?: string
+  screen_name?: string
+}
+
 export default function Index() {
   const [currentUser, setCurrentUser] = useState<User | null>(authService.getCurrentUser())
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false)
+  const [pendingVKUser, setPendingVKUser] = useState<VKUser | null>(null)
   const [selectedFaction, setSelectedFaction] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState('overview')
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications)
@@ -92,8 +103,19 @@ export default function Index() {
     setCurrentUser(user)
     toast({
       title: 'Добро пожаловать!',
-      description: `Вход выполнен как ${user.username}`,
+      description: `Вход выполнен как ${user.name}`,
     })
+  }
+
+  const handleRegistrationNeeded = (vkUser: VKUser) => {
+    setPendingVKUser(vkUser)
+    setShowRegistrationModal(true)
+  }
+
+  const handleRegistrationComplete = (user: User) => {
+    setCurrentUser(user)
+    setPendingVKUser(null)
+    setShowRegistrationModal(false)
   }
 
   const handleLogout = () => {
@@ -157,9 +179,25 @@ export default function Index() {
     )
   }
 
-  // Show login if no user is authenticated
+  // Show auth/registration if no user is authenticated
   if (!currentUser) {
-    return <LoginComponent onLogin={handleLogin} />
+    return (
+      <>
+        <VKAuthComponent 
+          onLogin={handleLogin}
+          onRegistrationNeeded={handleRegistrationNeeded}
+        />
+        <RegistrationModal
+          isOpen={showRegistrationModal}
+          onClose={() => {
+            setShowRegistrationModal(false)
+            setPendingVKUser(null)
+          }}
+          vkUser={pendingVKUser}
+          onComplete={handleRegistrationComplete}
+        />
+      </>
+    )
   }
 
   return (
