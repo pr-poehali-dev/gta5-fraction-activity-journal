@@ -1,6 +1,7 @@
 import mysql from 'mysql2/promise'
 import { DB_CONFIG, USE_MOCK_DATA } from '@/config/database'
 import { User, Faction, FactionMember, Warning, ActivityStatus, UserRole, UserPermission } from '@/components/types'
+import { schemaLoader } from './SchemaLoader'
 
 export interface ActivityLog {
   id?: number
@@ -41,6 +42,10 @@ class DatabaseService {
       
       // Проверяем доступность базы данных
       await this.connection.ping()
+      
+      // Автоматически применяем схему при первом подключении
+      await this.ensureSchemaExists()
+      
       this.isInitialized = true
       
     } catch (error) {
@@ -59,6 +64,38 @@ class DatabaseService {
       return true
     } catch {
       return false
+    }
+  }
+
+  // Проверка и автоматическое создание схемы
+  private async ensureSchemaExists(): Promise<void> {
+    try {
+      console.log('🔍 Проверка схемы базы данных...')
+      
+      // Проверяем статус схемы
+      const status = await schemaLoader.checkSchemaStatus()
+      
+      if (!status.schemaValid || status.missingTables.length > 0) {
+        console.log(`⚠️ Обнаружены проблемы со схемой:`, {
+          missingTables: status.missingTables,
+          errors: status.errors
+        })
+        
+        console.log('🔄 Применяю схему из schema.sql...')
+        const result = await schemaLoader.applySchema()
+        
+        if (result.success) {
+          console.log(`✅ Схема успешно применена! Выполнено запросов: ${result.queriesExecuted}`)
+        } else {
+          console.error('❌ Ошибка применения схемы:', result.error)
+          throw new Error(`Не удалось применить схему: ${result.error}`)
+        }
+      } else {
+        console.log('✅ Схема базы данных в порядке')
+      }
+    } catch (error) {
+      console.error('❌ Ошибка проверки схемы:', error)
+      // Не прерываем инициализацию, возможно база уже настроена
     }
   }
 
