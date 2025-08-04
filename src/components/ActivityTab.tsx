@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Icon from '@/components/ui/icon'
 import { Faction, ActivityStatus } from './types'
 import { getStatusColor, getStatusText } from './utils'
+import StatusToggle from './StatusToggle'
 
 interface ActivityTabProps {
   factions: Faction[]
@@ -38,32 +39,11 @@ export default function ActivityTab({ factions, updateMemberStatus }: ActivityTa
                       <div>{member.lastSeen}</div>
                       <div className="text-muted-foreground">{member.weeklyHours}ч на неделе</div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant={member.status === 'online' ? 'default' : 'outline'}
-                        onClick={() => updateMemberStatus(faction.id, member.id, 'online')}
-                        className="h-8"
-                      >
-                        Онлайн
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={member.status === 'afk' ? 'secondary' : 'outline'}
-                        onClick={() => updateMemberStatus(faction.id, member.id, 'afk')}
-                        className="h-8"
-                      >
-                        АФК
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={member.status === 'offline' ? 'destructive' : 'outline'}
-                        onClick={() => updateMemberStatus(faction.id, member.id, 'offline')}
-                        className="h-8"
-                      >
-                        Вышел
-                      </Button>
-                    </div>
+                    <StatusToggle
+                      currentStatus={member.status}
+                      onStatusChange={(newStatus) => updateMemberStatus(faction.id, member.id, newStatus)}
+                      size="sm"
+                    />
                   </div>
                 </div>
               ))

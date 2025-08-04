@@ -1,13 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Faction } from './types'
+import { Faction, ActivityStatus } from './types'
 import { getStatusColor, getStatusText } from './utils'
+import StatusToggle from './StatusToggle'
 
 interface FactionsTabProps {
   factions: Faction[]
+  updateMemberStatus?: (factionId: number, memberId: number, newStatus: ActivityStatus) => void
 }
 
-export default function FactionsTab({ factions }: FactionsTabProps) {
+export default function FactionsTab({ factions, updateMemberStatus }: FactionsTabProps) {
   return (
     <div className="space-y-6">
       <div className="grid gap-6">
@@ -36,7 +38,20 @@ export default function FactionsTab({ factions }: FactionsTabProps) {
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <Badge variant="outline">{getStatusText(member.status)}</Badge>
+                      {updateMemberStatus ? (
+                        <StatusToggle
+                          currentStatus={member.status}
+                          onStatusChange={(newStatus) => updateMemberStatus(faction.id, member.id, newStatus)}
+                          size="sm"
+                        />
+                      ) : (
+                        <StatusToggle
+                          currentStatus={member.status}
+                          onStatusChange={() => {}}
+                          disabled={true}
+                          size="sm"
+                        />
+                      )}
                       <div className="text-sm text-muted-foreground">
                         {member.totalHours}ч всего
                       </div>

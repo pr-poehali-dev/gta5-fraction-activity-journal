@@ -246,7 +246,10 @@ export default function Index() {
 
           {canViewFactions && (
             <TabsContent value="factions" className="space-y-6">
-              <FactionsTab factions={mockFactions} />
+              <FactionsTab 
+                factions={mockFactions} 
+                updateMemberStatus={canViewActivity ? updateMemberStatus : undefined}
+              />
             </TabsContent>
           )}
 
