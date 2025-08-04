@@ -7,7 +7,7 @@ interface AdminAction {
   id: string
   label: string
   icon: string
-  requiredPermission: 'read' | 'write' | 'moderate' | 'admin' | 'system' | 'manage_permissions'
+  requiredPermission: 'read' | 'write' | 'moderate' | 'admin' | 'system'
   action: () => void
 }
 
@@ -19,7 +19,6 @@ interface AdminActionsCardProps {
   onShowActivityLog: () => void
   onExportReports: () => void
   onBackupData: () => void
-  onManagePermissions?: () => void
 }
 
 export default function AdminActionsCard({
@@ -29,8 +28,7 @@ export default function AdminActionsCard({
   onManageFactions,
   onShowActivityLog,
   onExportReports,
-  onBackupData,
-  onManagePermissions
+  onBackupData
 }: AdminActionsCardProps) {
   const adminActions: AdminAction[] = [
     { 
@@ -83,17 +81,6 @@ export default function AdminActionsCard({
       action: onBackupData
     }
   ]
-
-  // Добавляем управление правами, если есть соответствующие права
-  if (onManagePermissions && authService.hasPermission('manage_permissions')) {
-    adminActions.push({
-      id: 'managePermissions',
-      label: 'Управление правами',
-      icon: 'Key',
-      requiredPermission: 'manage_permissions',
-      action: onManagePermissions
-    })
-  }
 
   return (
     <Card className="hover:shadow-lg transition-shadow">
