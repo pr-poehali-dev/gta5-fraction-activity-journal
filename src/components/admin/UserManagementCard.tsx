@@ -6,7 +6,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import Icon from '@/components/ui/icon'
 import { User, UserRole } from '../types'
 import { authService } from '../auth'
-import QuickActionButton from '../QuickActionButton'
 
 interface UserManagementCardProps {
   users: User[]
@@ -97,17 +96,6 @@ export default function UserManagementCard({
                     <Badge className={getRoleColor(user.role)}>
                       {getRoleText(user.role)}
                     </Badge>
-                    
-                    {/* Кнопка журнала активности */}
-                    <QuickActionButton
-                      action="activity-log"
-                      userId={user.id}
-                      variant="ghost"
-                      size="sm"
-                      showIcon={true}
-                    >
-                      <span className="sr-only">Журнал активности пользователя {user.username}</span>
-                    </QuickActionButton>
                     
                     {user.id !== currentUser.id && (
                       <div className="flex gap-2">
