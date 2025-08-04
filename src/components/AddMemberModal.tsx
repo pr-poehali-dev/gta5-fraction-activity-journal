@@ -12,7 +12,7 @@ import { Faction, FactionMember } from './types'
 interface AddMemberModalProps {
   isOpen: boolean
   onClose: () => void
-  onAddMember: (member: Omit<FactionMember, 'id'> & { factionId: number }) => void
+  onAddMember: (member: Omit<FactionMember, 'id'>) => void
   factions: Faction[]
 }
 
@@ -45,7 +45,7 @@ export default function AddMemberModal({ isOpen, onClose, onAddMember, factions 
       return
     }
 
-    const newMember: Omit<FactionMember, 'id'> & { factionId: number } = {
+    const newMember: Omit<FactionMember, 'id'> = {
       name: formData.name.trim(),
       rank: formData.rank,
       status: 'offline',
@@ -54,8 +54,7 @@ export default function AddMemberModal({ isOpen, onClose, onAddMember, factions 
       weeklyHours: 0,
       warnings: [],
       joinDate: new Date(),
-      notes: formData.notes.trim() || undefined,
-      factionId: parseInt(formData.factionId)
+      notes: formData.notes.trim() || undefined
     }
 
     onAddMember(newMember)

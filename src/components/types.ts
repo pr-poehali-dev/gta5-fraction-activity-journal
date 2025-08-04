@@ -34,8 +34,6 @@ export interface Faction {
   totalMembers: number
   onlineMembers: number
   color: string
-  type?: string
-  description?: string
 }
 
 export interface Notification {

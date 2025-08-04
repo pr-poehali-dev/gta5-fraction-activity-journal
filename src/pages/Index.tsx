@@ -9,9 +9,7 @@ import { ActivityStatus, Notification, User } from '@/components/types'
 import { mockFactions, mockNotifications } from '@/components/mockData'
 import { getStatusText } from '@/components/utils'
 import { authService } from '@/components/auth'
-import { userDatabase } from '@/components/database'
-import VKAuthComponent from '@/components/VKAuthComponent'
-import RegistrationModal from '@/components/RegistrationModal'
+import LoginComponent from '@/components/LoginComponent'
 import Header from '@/components/Header'
 import OverviewTab from '@/components/OverviewTab'
 import ActivityTab from '@/components/ActivityTab'
@@ -19,18 +17,8 @@ import FactionsTab from '@/components/FactionsTab'
 import NotificationsTab from '@/components/NotificationsTab'
 import AdminTab from '@/components/AdminTab'
 
-interface VKUser {
-  id: number
-  first_name: string
-  last_name: string
-  photo_200?: string
-  screen_name?: string
-}
-
 export default function Index() {
   const [currentUser, setCurrentUser] = useState<User | null>(authService.getCurrentUser())
-  const [showRegistrationModal, setShowRegistrationModal] = useState(false)
-  const [pendingVKUser, setPendingVKUser] = useState<VKUser | null>(null)
   const [selectedFaction, setSelectedFaction] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState('overview')
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications)
@@ -103,19 +91,8 @@ export default function Index() {
     setCurrentUser(user)
     toast({
       title: 'Добро пожаловать!',
-      description: `Вход выполнен как ${user.name}`,
+      description: `Вход выполнен как ${user.username}`,
     })
-  }
-
-  const handleRegistrationNeeded = (vkUser: VKUser) => {
-    setPendingVKUser(vkUser)
-    setShowRegistrationModal(true)
-  }
-
-  const handleRegistrationComplete = (user: User) => {
-    setCurrentUser(user)
-    setPendingVKUser(null)
-    setShowRegistrationModal(false)
   }
 
   const handleLogout = () => {
@@ -139,31 +116,32 @@ export default function Index() {
       return
     }
 
-    // Обновляем статус в базе данных
-    if (userDatabase.updateMemberStatus(memberId, newStatus)) {
-      const member = userDatabase.getMemberById(memberId)
-      const faction = userDatabase.getFactionById(member?.factionId || 0)
-      
-      if (faction && member) {
-        const statusNotification: Notification = {
-          id: Date.now().toString(),
-          title: 'Изменение статуса участника',
-          message: `${member.name} из фракции "${faction.name}" сменил статус на "${getStatusText(newStatus)}"`,
-          type: newStatus === 'offline' ? 'warning' : 'info',
-          priority: 'low',
-          timestamp: new Date(),
-          read: false,
-          factionId,
-          memberId
-        }
-        
-        setNotifications(prev => [statusNotification, ...prev])
-        
-        toast({
-          title: statusNotification.title,
-          description: statusNotification.message,
-        })
+    // В реальном приложении здесь был бы API вызов
+    console.log(`Updating member ${memberId} in faction ${factionId} to ${newStatus}`)
+    
+    // Создаем уведомление о смене статуса
+    const faction = mockFactions.find(f => f.id === factionId)
+    const member = faction?.members.find(m => m.id === memberId)
+    
+    if (faction && member) {
+      const statusNotification: Notification = {
+        id: Date.now().toString(),
+        title: 'Изменение статуса участника',
+        message: `${member.name} из фракции "${faction.name}" сменил статус на "${getStatusText(newStatus)}"`,
+        type: newStatus === 'offline' ? 'warning' : 'info',
+        priority: 'low',
+        timestamp: new Date(),
+        read: false,
+        factionId,
+        memberId
       }
+      
+      setNotifications(prev => [statusNotification, ...prev])
+      
+      toast({
+        title: statusNotification.title,
+        description: statusNotification.message,
+      })
     }
   }
 
@@ -179,25 +157,9 @@ export default function Index() {
     )
   }
 
-  // Show auth/registration if no user is authenticated
+  // Show login if no user is authenticated
   if (!currentUser) {
-    return (
-      <>
-        <VKAuthComponent 
-          onLogin={handleLogin}
-          onRegistrationNeeded={handleRegistrationNeeded}
-        />
-        <RegistrationModal
-          isOpen={showRegistrationModal}
-          onClose={() => {
-            setShowRegistrationModal(false)
-            setPendingVKUser(null)
-          }}
-          vkUser={pendingVKUser}
-          onComplete={handleRegistrationComplete}
-        />
-      </>
-    )
+    return <LoginComponent onLogin={handleLogin} />
   }
 
   return (
@@ -266,7 +228,7 @@ export default function Index() {
 
           <TabsContent value="overview" className="space-y-6">
             <OverviewTab
-              factions={userDatabase.getAllFactions()}
+              factions={mockFactions}
               totalMembers={totalMembers}
               totalOnline={totalOnline}
               onlinePercentage={onlinePercentage}
@@ -276,7 +238,7 @@ export default function Index() {
           {canViewActivity && (
             <TabsContent value="activity" className="space-y-6">
               <ActivityTab
-                factions={userDatabase.getAllFactions()}
+                factions={mockFactions}
                 updateMemberStatus={updateMemberStatus}
               />
             </TabsContent>
@@ -285,7 +247,7 @@ export default function Index() {
           {canViewFactions && (
             <TabsContent value="factions" className="space-y-6">
               <FactionsTab 
-                factions={userDatabase.getAllFactions()} 
+                factions={mockFactions} 
                 updateMemberStatus={canViewActivity ? updateMemberStatus : undefined}
               />
             </TabsContent>
