@@ -83,6 +83,47 @@ export default function NewLoginComponent({ onLogin, onVKAuth, onRegister }: New
     }
   }
 
+  const handleObserverLogin = () => {
+    const observerUser: User = {
+      id: 996,
+      name: 'Гость Наблюдатель',
+      username: 'observer_guest',
+      password: '',
+      role: 'observer' as const,
+      permission: 'view-only' as const,
+      isOnline: true,
+      lastActivity: new Date(),
+      lastLogin: new Date(),
+      playTime: 0,
+      warnings: [],
+      faction: null,
+      isBlocked: false
+    }
+    
+    // Добавляем наблюдателя в базу если его нет
+    const users = userDatabase.getAllUsers()
+    const existingObserver = users.find(u => u.id === observerUser.id)
+    
+    if (!existingObserver) {
+      userDatabase.addUser(observerUser)
+    } else {
+      userDatabase.updateUser(observerUser.id, { ...observerUser, lastLogin: new Date(), isOnline: true })
+    }
+    
+    userDatabase.addActivityLog({
+      userId: observerUser.id,
+      action: 'login',
+      details: 'Вход как наблюдатель без пароля',
+      timestamp: new Date()
+    })
+    
+    onLogin(observerUser)
+    toast({
+      title: 'Добро пожаловать!',
+      description: 'Вход выполнен как наблюдатель. Доступен только просмотр информации.'
+    })
+  }
+
   const handleDemoLogin = (role: 'admin' | 'moderator' | 'user') => {
     const demoUsers = {
       admin: {
@@ -276,6 +317,20 @@ export default function NewLoginComponent({ onLogin, onVKAuth, onRegister }: New
                 </div>
 
                 <div className="grid gap-3">
+                  <Button
+                    onClick={handleObserverLogin}
+                    variant="outline"
+                    className="w-full justify-start border-2 border-slate-200 hover:bg-slate-50"
+                  >
+                    <div className="w-8 h-8 bg-slate-400 rounded-full flex items-center justify-center mr-3">
+                      <Icon name="Eye" size={16} className="text-white" />
+                    </div>
+                    <div className="text-left">
+                      <div className="font-medium text-slate-700">Наблюдатель</div>
+                      <div className="text-xs text-slate-600">Только просмотр без пароля</div>
+                    </div>
+                  </Button>
+
                   <Button
                     onClick={() => handleDemoLogin('admin')}
                     variant="outline"

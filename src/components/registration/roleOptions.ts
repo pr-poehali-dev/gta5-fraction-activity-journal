@@ -2,6 +2,15 @@ import { RoleOption } from './types'
 
 export const roleOptions: RoleOption[] = [
   {
+    id: 'observer',
+    name: 'Наблюдатель',
+    description: 'Только просмотр информации',
+    permission: 'view-only',
+    icon: 'Eye',
+    color: 'bg-slate-400',
+    requirements: ['Интерес к системе', 'Базовые навыки работы с интерфейсом']
+  },
+  {
     id: 'user',
     name: 'Пользователь',
     description: 'Базовый доступ к системе',

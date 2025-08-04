@@ -23,7 +23,7 @@ export default function NewRegistrationModal({ isOpen, onClose, onComplete }: Ne
     password: '',
     confirmPassword: ''
   })
-  const [selectedRole, setSelectedRole] = useState<UserRole>('user')
+  const [selectedRole, setSelectedRole] = useState<UserRole>('observer')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isUsernameManual, setIsUsernameManual] = useState(false)
@@ -49,7 +49,7 @@ export default function NewRegistrationModal({ isOpen, onClose, onComplete }: Ne
         password: '',
         confirmPassword: ''
       })
-      setSelectedRole('user')
+      setSelectedRole('observer')
       setErrors({})
       setIsUsernameManual(false)
     } catch (error) {

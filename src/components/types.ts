@@ -1,8 +1,8 @@
 export type ActivityStatus = 'online' | 'afk' | 'offline'
 export type NotificationType = 'info' | 'warning' | 'error' | 'success'
 export type NotificationPriority = 'low' | 'medium' | 'high' | 'critical'
-export type UserRole = 'user' | 'moderator' | 'admin' | 'support' | 'developer' | 'viewer' | 'super_admin'
-export type UserPermission = 'read' | 'write' | 'moderate' | 'admin' | 'system'
+export type UserRole = 'user' | 'moderator' | 'admin' | 'support' | 'developer' | 'viewer' | 'super_admin' | 'observer'
+export type UserPermission = 'read' | 'write' | 'moderate' | 'admin' | 'system' | 'view-only'
 export type AccessLevel = 'read' | 'write' | 'admin' | 'system'
 
 export interface Warning {
