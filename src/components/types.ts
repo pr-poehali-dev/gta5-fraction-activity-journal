@@ -1,6 +1,8 @@
 export type ActivityStatus = 'online' | 'afk' | 'offline'
 export type NotificationType = 'info' | 'warning' | 'error' | 'success'
 export type NotificationPriority = 'low' | 'medium' | 'high' | 'critical'
+export type UserRole = 'viewer' | 'moderator' | 'admin' | 'super_admin'
+export type AccessLevel = 'read' | 'write' | 'admin' | 'system'
 
 export interface FactionMember {
   id: number
@@ -31,4 +33,23 @@ export interface Notification {
   read: boolean
   factionId?: number
   memberId?: number
+}
+
+export interface User {
+  id: number
+  username: string
+  role: UserRole
+  factionId?: number
+  isBlocked: boolean
+  permissions: AccessLevel[]
+  lastLogin: Date
+}
+
+export interface AdminAction {
+  id: string
+  adminId: number
+  action: string
+  target: string
+  timestamp: Date
+  details?: string
 }

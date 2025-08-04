@@ -3,9 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import Icon from '@/components/ui/icon'
-import { Notification } from './types'
+import { Notification, User } from './types'
 import { mockFactions } from './mockData'
 import { getNotificationIcon, getNotificationColor, getPriorityColor, formatTimeAgo } from './utils'
+import { authService } from './auth'
 
 interface HeaderProps {
   notifications: Notification[]
@@ -15,6 +16,8 @@ interface HeaderProps {
   setShowNotifications: (show: boolean) => void
   markNotificationAsRead: (id: string) => void
   markAllAsRead: () => void
+  currentUser: User
+  onLogout: () => void
 }
 
 export default function Header({
@@ -24,8 +27,20 @@ export default function Header({
   showNotifications,
   setShowNotifications,
   markNotificationAsRead,
-  markAllAsRead
+  markAllAsRead,
+  currentUser,
+  onLogout
 }: HeaderProps) {
+  
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case 'super_admin': return 'bg-purple-500 text-white'
+      case 'admin': return 'bg-red-500 text-white'
+      case 'moderator': return 'bg-orange-500 text-white'
+      case 'viewer': return 'bg-blue-500 text-white'
+      default: return 'bg-gray-500 text-white'
+    }
+  }
   return (
     <div className="flex items-center justify-between">
       <div className="text-center flex-1 space-y-4">
@@ -40,25 +55,51 @@ export default function Header({
         <p className="text-muted-foreground text-lg">Система управления активностью фракций</p>
       </div>
       
-      {/* Notification Bell */}
-      <div className="relative">
+      {/* User Info and Actions */}
+      <div className="flex items-center gap-3">
+        {/* User Profile */}
+        <div className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
+          <Icon name="User" size={20} className="text-muted-foreground" />
+          <div className="text-sm">
+            <div className="font-medium">{currentUser.username}</div>
+            <Badge className={`text-xs ${getRoleColor(currentUser.role)}`}>
+              {currentUser.role}
+            </Badge>
+          </div>
+        </div>
+
+        {/* Logout Button */}
         <Button
           variant="outline"
-          size="icon"
-          onClick={() => setShowNotifications(!showNotifications)}
-          className="relative"
+          size="sm"
+          onClick={onLogout}
+          className="text-red-600 border-red-200 hover:bg-red-50"
         >
-          <Icon name="Bell" size={20} />
-          {unreadNotifications.length > 0 && (
-            <div className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
-              {unreadNotifications.length > 9 ? '9+' : unreadNotifications.length}
-            </div>
-          )}
+          <Icon name="LogOut" size={16} className="mr-2" />
+          Выйти
         </Button>
-        
-        {criticalNotifications.length > 0 && (
-          <div className="absolute -top-2 -right-2 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-        )}
+
+        {/* Notification Bell */}
+        <div className="relative">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="relative"
+          >
+            <Icon name="Bell" size={20} />
+            {unreadNotifications.length > 0 && (
+              <div className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
+                {unreadNotifications.length > 9 ? '9+' : unreadNotifications.length}
+              </div>
+            )}
+          </Button>
+          
+          {criticalNotifications.length > 0 && (
+            <div className="absolute -top-2 -right-2 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+          )}
+        </div>
+      </div>
         
         {/* Notifications Dropdown */}
         {showNotifications && (

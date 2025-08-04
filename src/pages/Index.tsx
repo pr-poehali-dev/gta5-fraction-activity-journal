@@ -5,9 +5,11 @@ import { toast } from '@/hooks/use-toast'
 import { Toaster } from '@/components/ui/toaster'
 import Icon from '@/components/ui/icon'
 
-import { ActivityStatus, Notification } from '@/components/types'
+import { ActivityStatus, Notification, User } from '@/components/types'
 import { mockFactions, mockNotifications } from '@/components/mockData'
 import { getStatusText } from '@/components/utils'
+import { authService } from '@/components/auth'
+import LoginComponent from '@/components/LoginComponent'
 import Header from '@/components/Header'
 import OverviewTab from '@/components/OverviewTab'
 import ActivityTab from '@/components/ActivityTab'
@@ -16,6 +18,7 @@ import NotificationsTab from '@/components/NotificationsTab'
 import AdminTab from '@/components/AdminTab'
 
 export default function Index() {
+  const [currentUser, setCurrentUser] = useState<User | null>(authService.getCurrentUser())
   const [selectedFaction, setSelectedFaction] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState('overview')
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications)
@@ -28,9 +31,28 @@ export default function Index() {
   const unreadNotifications = notifications.filter(n => !n.read)
   const criticalNotifications = notifications.filter(n => n.priority === 'critical' && !n.read)
 
+  // Check if user has access to specific tabs
+  const canViewActivity = authService.canAccessFeature('viewActivity')
+  const canViewFactions = authService.canAccessFeature('viewFactions')
+  const canViewNotifications = authService.canAccessFeature('viewNotifications')
+  const canAccessAdmin = authService.canAccessFeature('adminPanel')
+
   useEffect(() => {
+    // Check if user is blocked
+    if (currentUser?.isBlocked) {
+      toast({
+        title: 'Доступ заблокирован',
+        description: 'Ваш аккаунт был заблокирован администратором',
+        variant: 'destructive'
+      })
+      handleLogout()
+      return
+    }
+
     // Симуляция получения уведомлений в реальном времени
     const interval = setInterval(() => {
+      if (!currentUser) return
+
       const randomEvents = [
         'Участник вышел из игры',
         'Новый участник присоединился', 
@@ -53,17 +75,47 @@ export default function Index() {
         
         setNotifications(prev => [newNotification, ...prev])
         
-        toast({
-          title: newNotification.title,
-          description: newNotification.message,
-        })
+        if (canViewNotifications) {
+          toast({
+            title: newNotification.title,
+            description: newNotification.message,
+          })
+        }
       }
     }, 5000)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [currentUser, canViewNotifications])
+
+  const handleLogin = (user: User) => {
+    setCurrentUser(user)
+    toast({
+      title: 'Добро пожаловать!',
+      description: `Вход выполнен как ${user.username}`,
+    })
+  }
+
+  const handleLogout = () => {
+    authService.logout()
+    setCurrentUser(null)
+    setActiveTab('overview')
+    setShowNotifications(false)
+    toast({
+      title: 'Выход выполнен',
+      description: 'До свидания!',
+    })
+  }
 
   const updateMemberStatus = (factionId: number, memberId: number, newStatus: ActivityStatus) => {
+    if (!authService.canAccessFeature('updateMemberStatus')) {
+      toast({
+        title: 'Доступ запрещен',
+        description: 'У вас недостаточно прав для изменения статуса участников',
+        variant: 'destructive'
+      })
+      return
+    }
+
     // В реальном приложении здесь был бы API вызов
     console.log(`Updating member ${memberId} in faction ${factionId} to ${newStatus}`)
     
@@ -105,6 +157,11 @@ export default function Index() {
     )
   }
 
+  // Show login if no user is authenticated
+  if (!currentUser) {
+    return <LoginComponent onLogin={handleLogin} />
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
       <div className="container mx-auto p-6 space-y-8">
@@ -116,6 +173,8 @@ export default function Index() {
           setShowNotifications={setShowNotifications}
           markNotificationAsRead={markNotificationAsRead}
           markAllAsRead={markAllAsRead}
+          currentUser={currentUser}
+          onLogout={handleLogout}
         />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -124,26 +183,46 @@ export default function Index() {
               <Icon name="BarChart3" size={16} />
               Обзор
             </TabsTrigger>
-            <TabsTrigger value="activity" className="flex items-center gap-2">
+            <TabsTrigger 
+              value="activity" 
+              className="flex items-center gap-2"
+              disabled={!canViewActivity}
+            >
               <Icon name="Clock" size={16} />
               Активность
+              {!canViewActivity && <Icon name="Lock" size={12} />}
             </TabsTrigger>
-            <TabsTrigger value="factions" className="flex items-center gap-2">
+            <TabsTrigger 
+              value="factions" 
+              className="flex items-center gap-2"
+              disabled={!canViewFactions}
+            >
               <Icon name="Users" size={16} />
               Фракции
+              {!canViewFactions && <Icon name="Lock" size={12} />}
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <TabsTrigger 
+              value="notifications" 
+              className="flex items-center gap-2"
+              disabled={!canViewNotifications}
+            >
               <Icon name="Bell" size={16} />
               Уведомления
-              {unreadNotifications.length > 0 && (
+              {unreadNotifications.length > 0 && canViewNotifications && (
                 <Badge variant="destructive" className="text-xs px-1.5 py-0.5">
                   {unreadNotifications.length}
                 </Badge>
               )}
+              {!canViewNotifications && <Icon name="Lock" size={12} />}
             </TabsTrigger>
-            <TabsTrigger value="admin" className="flex items-center gap-2">
+            <TabsTrigger 
+              value="admin" 
+              className="flex items-center gap-2"
+              disabled={!canAccessAdmin}
+            >
               <Icon name="Settings" size={16} />
               Админ
+              {!canAccessAdmin && <Icon name="Lock" size={12} />}
             </TabsTrigger>
           </TabsList>
 
@@ -156,31 +235,39 @@ export default function Index() {
             />
           </TabsContent>
 
-          <TabsContent value="activity" className="space-y-6">
-            <ActivityTab
-              factions={mockFactions}
-              updateMemberStatus={updateMemberStatus}
-            />
-          </TabsContent>
+          {canViewActivity && (
+            <TabsContent value="activity" className="space-y-6">
+              <ActivityTab
+                factions={mockFactions}
+                updateMemberStatus={updateMemberStatus}
+              />
+            </TabsContent>
+          )}
 
-          <TabsContent value="factions" className="space-y-6">
-            <FactionsTab factions={mockFactions} />
-          </TabsContent>
+          {canViewFactions && (
+            <TabsContent value="factions" className="space-y-6">
+              <FactionsTab factions={mockFactions} />
+            </TabsContent>
+          )}
 
-          <TabsContent value="notifications" className="space-y-6">
-            <NotificationsTab
-              notifications={notifications}
-              unreadNotifications={unreadNotifications}
-              criticalNotifications={criticalNotifications}
-              factions={mockFactions}
-              markNotificationAsRead={markNotificationAsRead}
-              markAllAsRead={markAllAsRead}
-            />
-          </TabsContent>
+          {canViewNotifications && (
+            <TabsContent value="notifications" className="space-y-6">
+              <NotificationsTab
+                notifications={notifications}
+                unreadNotifications={unreadNotifications}
+                criticalNotifications={criticalNotifications}
+                factions={mockFactions}
+                markNotificationAsRead={markNotificationAsRead}
+                markAllAsRead={markAllAsRead}
+              />
+            </TabsContent>
+          )}
 
-          <TabsContent value="admin" className="space-y-6">
-            <AdminTab />
-          </TabsContent>
+          {canAccessAdmin && (
+            <TabsContent value="admin" className="space-y-6">
+              <AdminTab currentUser={currentUser} />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
       <Toaster />

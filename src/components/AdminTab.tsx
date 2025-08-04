@@ -1,8 +1,145 @@
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Separator } from '@/components/ui/separator'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
+import { toast } from '@/hooks/use-toast'
 import Icon from '@/components/ui/icon'
+import { User, UserRole } from './types'
+import { authService, mockUsers } from './auth'
 
-export default function AdminTab() {
+interface AdminTabProps {
+  currentUser: User
+}
+
+export default function AdminTab({ currentUser }: AdminTabProps) {
+  const [users, setUsers] = useState(mockUsers)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+
+  const canManageUsers = authService.hasPermission('admin')
+  const canSystemSettings = authService.hasPermission('system')
+
+  const getRoleColor = (role: UserRole) => {
+    switch (role) {
+      case 'super_admin': return 'bg-purple-500 text-white'
+      case 'admin': return 'bg-red-500 text-white'
+      case 'moderator': return 'bg-orange-500 text-white'
+      case 'viewer': return 'bg-blue-500 text-white'
+    }
+  }
+
+  const getRoleText = (role: UserRole) => {
+    switch (role) {
+      case 'super_admin': return 'Супер Админ'
+      case 'admin': return 'Администратор'
+      case 'moderator': return 'Модератор'
+      case 'viewer': return 'Наблюдатель'
+    }
+  }
+
+  const handleBlockUser = (userId: number) => {
+    if (authService.blockUser(userId)) {
+      setUsers([...mockUsers])
+      toast({
+        title: 'Пользователь заблокирован',
+        description: 'Доступ к админ-панели отозван',
+      })
+    } else {
+      toast({
+        title: 'Ошибка',
+        description: 'Недостаточно прав для блокировки пользователя',
+        variant: 'destructive'
+      })
+    }
+  }
+
+  const handleUnblockUser = (userId: number) => {
+    if (authService.unblockUser(userId)) {
+      setUsers([...mockUsers])
+      toast({
+        title: 'Пользователь разблокирован',
+        description: 'Доступ восстановлен',
+      })
+    } else {
+      toast({
+        title: 'Ошибка',
+        description: 'Недостаточно прав для разблокировки пользователя',
+        variant: 'destructive'
+      })
+    }
+  }
+
+  const handleChangeRole = (userId: number, newRole: UserRole) => {
+    if (authService.changeUserRole(userId, newRole)) {
+      setUsers([...mockUsers])
+      toast({
+        title: 'Роль изменена',
+        description: `Пользователю назначена роль "${getRoleText(newRole)}"`,
+      })
+    } else {
+      toast({
+        title: 'Ошибка',
+        description: 'Недостаточно прав для изменения роли',
+        variant: 'destructive'
+      })
+    }
+  }
+
+  const adminActions = [
+    { 
+      id: 'addUser', 
+      label: 'Добавить участника', 
+      icon: 'UserPlus', 
+      requiredPermission: 'write' as const,
+      action: () => toast({ title: 'Функция в разработке', description: 'Добавление пользователей будет доступно скоро' })
+    },
+    { 
+      id: 'createFaction', 
+      label: 'Создать фракцию', 
+      icon: 'Shield', 
+      requiredPermission: 'admin' as const,
+      action: () => toast({ title: 'Функция в разработке', description: 'Создание фракций будет доступно скоро' })
+    },
+    { 
+      id: 'exportReports', 
+      label: 'Экспорт отчетов', 
+      icon: 'FileText', 
+      requiredPermission: 'read' as const,
+      action: () => toast({ title: 'Экспорт запущен', description: 'Отчеты будут готовы через несколько минут' })
+    },
+    { 
+      id: 'backup', 
+      label: 'Backup данных', 
+      icon: 'Database', 
+      requiredPermission: 'system' as const,
+      action: () => toast({ title: 'Backup создан', description: 'Резервная копия сохранена успешно' })
+    }
+  ]
+
+  if (!canManageUsers) {
+    return (
+      <div className="space-y-6">
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="pt-6">
+            <div className="text-center space-y-4">
+              <Icon name="Lock" size={48} className="mx-auto text-red-500" />
+              <div>
+                <h3 className="text-lg font-semibold text-red-800">Доступ ограничен</h3>
+                <p className="text-red-600">У вас недостаточно прав для доступа к административной панели.</p>
+                <p className="text-sm text-red-500 mt-2">
+                  Ваша роль: <Badge className={getRoleColor(currentUser.role)}>{getRoleText(currentUser.role)}</Badge>
+                </p>
+                <p className="text-sm text-red-500">Требуется роль: Администратор или выше</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -14,22 +151,22 @@ export default function AdminTab() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Button className="w-full justify-start" variant="outline">
-              <Icon name="UserPlus" size={16} className="mr-2" />
-              Добавить участника
-            </Button>
-            <Button className="w-full justify-start" variant="outline">
-              <Icon name="Shield" size={16} className="mr-2" />
-              Создать фракцию
-            </Button>
-            <Button className="w-full justify-start" variant="outline">
-              <Icon name="FileText" size={16} className="mr-2" />
-              Экспорт отчетов
-            </Button>
-            <Button className="w-full justify-start" variant="outline">
-              <Icon name="Database" size={16} className="mr-2" />
-              Backup данных
-            </Button>
+            {adminActions.map((action) => {
+              const hasPermission = authService.hasPermission(action.requiredPermission)
+              return (
+                <Button 
+                  key={action.id}
+                  className="w-full justify-start" 
+                  variant={hasPermission ? "outline" : "ghost"}
+                  disabled={!hasPermission}
+                  onClick={action.action}
+                >
+                  <Icon name={action.icon} size={16} className="mr-2" />
+                  {action.label}
+                  {!hasPermission && <Icon name="Lock" size={12} className="ml-auto" />}
+                </Button>
+              )
+            })}
           </CardContent>
         </Card>
 
@@ -56,6 +193,134 @@ export default function AdminTab() {
           </CardContent>
         </Card>
       </div>
+
+      {/* User Management */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Icon name="Users" size={20} />
+            Управление пользователями
+            <Badge variant="secondary">{users.length} пользователей</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ScrollArea className="h-[400px]">
+            <div className="space-y-3">
+              {users.map((user) => (
+                <div
+                  key={user.id}
+                  className={`p-4 border rounded-lg transition-colors ${
+                    user.isBlocked ? 'bg-red-50 border-red-200' : 'hover:bg-muted/50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <Icon 
+                          name="User" 
+                          size={24} 
+                          className={user.isBlocked ? 'text-red-500' : 'text-muted-foreground'} 
+                        />
+                        {user.isBlocked && (
+                          <Icon 
+                            name="Lock" 
+                            size={12} 
+                            className="absolute -bottom-1 -right-1 text-red-500 bg-white rounded-full" 
+                          />
+                        )}
+                      </div>
+                      <div>
+                        <div className="font-medium flex items-center gap-2">
+                          {user.username}
+                          {user.id === currentUser.id && (
+                            <Badge variant="outline" className="text-xs">Это вы</Badge>
+                          )}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Последний вход: {user.lastLogin.toLocaleString('ru')}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <Badge className={getRoleColor(user.role)}>
+                        {getRoleText(user.role)}
+                      </Badge>
+                      
+                      {user.id !== currentUser.id && (
+                        <div className="flex gap-2">
+                          {user.isBlocked ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleUnblockUser(user.id)}
+                              className="text-green-600 border-green-200 hover:bg-green-50"
+                            >
+                              <Icon name="Unlock" size={14} className="mr-1" />
+                              Разблокировать
+                            </Button>
+                          ) : (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-red-600 border-red-200 hover:bg-red-50"
+                                  disabled={user.role === 'super_admin'}
+                                >
+                                  <Icon name="Lock" size={14} className="mr-1" />
+                                  Заблокировать
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Заблокировать пользователя?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Пользователь {user.username} потеряет доступ к административной панели.
+                                    Это действие можно отменить позже.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Отмена</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleBlockUser(user.id)}
+                                    className="bg-red-500 hover:bg-red-600"
+                                  >
+                                    Заблокировать
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
+
+                          {canSystemSettings && user.role !== 'super_admin' && (
+                            <div className="flex gap-1">
+                              {['viewer', 'moderator', 'admin'].map((role) => (
+                                <Button
+                                  key={role}
+                                  size="sm"
+                                  variant={user.role === role ? "default" : "ghost"}
+                                  onClick={() => handleChangeRole(user.id, role as UserRole)}
+                                  className="px-2 text-xs"
+                                  disabled={user.role === role}
+                                >
+                                  {role === 'viewer' && 'V'}
+                                  {role === 'moderator' && 'M'}
+                                  {role === 'admin' && 'A'}
+                                </Button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </CardContent>
+      </Card>
     </div>
   )
 }
