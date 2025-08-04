@@ -198,6 +198,23 @@ class UserDatabase {
     return this.users.find(u => u.id === userId)
   }
 
+  addUser(user: User): boolean {
+    try {
+      // Проверяем, что пользователь с таким username не существует
+      const existingUser = this.users.find(u => u.username === user.username)
+      if (existingUser) {
+        return false
+      }
+      
+      this.users.push(user)
+      this.notifyListeners()
+      return true
+    } catch (error) {
+      console.error('Ошибка добавления пользователя:', error)
+      return false
+    }
+  }
+
   updateUser(userId: number, updates: Partial<User>): boolean {
     const userIndex = this.users.findIndex(u => u.id === userId)
     if (userIndex === -1) return false

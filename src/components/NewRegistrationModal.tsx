@@ -128,19 +128,50 @@ export default function NewRegistrationModal({ isOpen, onClose, onComplete }: Ne
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
+    // Проверка имени
     if (!formData.name.trim()) {
       newErrors.name = 'Введите имя'
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = 'Имя должно содержать минимум 2 символа'
+    } else if (formData.name.trim().length > 50) {
+      newErrors.name = 'Имя не может быть длиннее 50 символов'
     }
 
-    // Логин генерируется автоматически, поэтому проверка не нужна
+    // Проверка логина
+    if (!formData.username.trim()) {
+      newErrors.username = 'Логин не может быть пустым'
+    } else if (formData.username.trim().length < 3) {
+      newErrors.username = 'Логин должен содержать минимум 3 символа'
+    } else if (formData.username.trim().length > 20) {
+      newErrors.username = 'Логин не может быть длиннее 20 символов'
+    } else if (!/^[a-zA-Z0-9_а-яА-Я]+$/.test(formData.username.trim())) {
+      newErrors.username = 'Логин может содержать только буквы, цифры и _'
+    } else {
+      // Проверяем уникальность логина
+      const users = userDatabase.getAllUsers()
+      const existingUser = users.find(u => u.username.toLowerCase() === formData.username.trim().toLowerCase())
+      if (existingUser) {
+        newErrors.username = `Логин уже занят пользователем "${existingUser.name}"`
+      }
+    }
 
+    // Проверка пароля
     if (!formData.password) {
       newErrors.password = 'Введите пароль'
     } else if (formData.password.length < 4) {
       newErrors.password = 'Пароль должен содержать минимум 4 символа'
+    } else if (formData.password.length > 100) {
+      newErrors.password = 'Пароль слишком длинный (максимум 100 символов)'
+    } else if (formData.password.includes(' ')) {
+      newErrors.password = 'Пароль не должен содержать пробелы'
+    } else if (formData.password === formData.username || formData.password === formData.name.toLowerCase()) {
+      newErrors.password = 'Пароль не должен совпадать с именем или логином'
     }
 
-    if (formData.password !== formData.confirmPassword) {
+    // Проверка подтверждения пароля
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Подтвердите пароль'
+    } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Пароли не совпадают'
     }
 
@@ -150,6 +181,23 @@ export default function NewRegistrationModal({ isOpen, onClose, onComplete }: Ne
 
   const handleSubmit = async () => {
     if (!validateForm()) {
+      const errorMessages = Object.entries(errors)
+        .filter(([_, message]) => message)
+        .map(([field, message]) => {
+          const fieldNames: Record<string, string> = {
+            name: 'Имя',
+            username: 'Логин',
+            password: 'Пароль',
+            confirmPassword: 'Подтверждение пароля'
+          }
+          return `${fieldNames[field] || field}: ${message}`
+        })
+      
+      toast({
+        title: 'Ошибки валидации',
+        description: errorMessages.join('; '),
+        variant: 'destructive'
+      })
       return
     }
 
@@ -158,8 +206,27 @@ export default function NewRegistrationModal({ isOpen, onClose, onComplete }: Ne
     try {
       const selectedRoleOption = roleOptions.find(role => role.id === selectedRole)!
       
+      // Дополнительная проверка перед созданием
+      const users = userDatabase.getAllUsers()
+      const existingUser = users.find(u => u.username === formData.username.trim())
+      if (existingUser) {
+        throw new Error(`Логин "${formData.username.trim()}" уже занят пользователем ${existingUser.name}`)
+      }
+
+      if (formData.name.trim().length < 2) {
+        throw new Error('Имя должно содержать минимум 2 символа')
+      }
+
+      if (formData.username.trim().length < 3) {
+        throw new Error('Логин должен содержать минимум 3 символа')
+      }
+
+      if (!/^[a-zA-Z0-9_а-яА-Я]+$/.test(formData.username.trim())) {
+        throw new Error('Логин может содержать только буквы, цифры и подчеркивания')
+      }
+      
       const newUser: User = {
-        id: Date.now(),
+        id: Date.now() + Math.floor(Math.random() * 1000), // Добавляем случайность для уникальности ID
         name: formData.name.trim(),
         username: formData.username.trim(),
         password: formData.password,
@@ -174,7 +241,10 @@ export default function NewRegistrationModal({ isOpen, onClose, onComplete }: Ne
         isBlocked: false
       }
 
-      userDatabase.addUser(newUser)
+      const success = userDatabase.addUser(newUser)
+      if (!success) {
+        throw new Error('Не удалось сохранить пользователя в базу данных. Попробуйте позже.')
+      }
       
       userDatabase.addActivityLog({
         userId: newUser.id,
@@ -202,11 +272,34 @@ export default function NewRegistrationModal({ isOpen, onClose, onComplete }: Ne
       setErrors({})
       setIsUsernameManual(false)
     } catch (error) {
+      let errorMessage = 'Неизвестная ошибка'
+      let errorTitle = 'Ошибка регистрации'
+      
+      if (error instanceof Error) {
+        errorMessage = error.message
+        
+        // Категоризируем ошибки
+        if (error.message.includes('занят')) {
+          errorTitle = 'Логин уже существует'
+        } else if (error.message.includes('содержать')) {
+          errorTitle = 'Неверные данные'
+        } else if (error.message.includes('базу данных')) {
+          errorTitle = 'Ошибка сервера'
+        }
+      } else if (typeof error === 'string') {
+        errorMessage = error
+      } else {
+        errorMessage = 'Произошла непредвиденная ошибка. Попробуйте позже или обратитесь к администратору.'
+      }
+      
       toast({
-        title: 'Ошибка регистрации',
-        description: 'Попробуйте еще раз',
+        title: errorTitle,
+        description: errorMessage,
         variant: 'destructive'
       })
+      
+      // Логируем ошибку для отладки
+      console.error('Ошибка регистрации:', error)
     } finally {
       setIsSubmitting(false)
     }
