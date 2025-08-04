@@ -1,14 +1,32 @@
-import mysql from 'mysql2/promise'
 import { DB_CONFIG } from '@/config/database'
+
+// Проверяем, находимся ли мы в браузере
+const isBrowser = typeof window !== 'undefined'
+
+// Динамический импорт mysql2 только в серверной среде
+let mysql: any = null
+
+if (!isBrowser) {
+  try {
+    mysql = require('mysql2/promise')
+  } catch (error) {
+    console.warn('mysql2 не доступен в этой среде:', error)
+  }
+}
 
 /**
  * Сервис для работы со схемой базы данных
  */
 class SchemaService {
-  private connection: mysql.Connection | null = null
+  private connection: any = null
 
   // Подключение к MySQL
   async connect(): Promise<boolean> {
+    if (isBrowser || !mysql) {
+      console.warn('MySQL не доступен в браузерной среде')
+      return false
+    }
+    
     try {
       this.connection = await mysql.createConnection(DB_CONFIG)
       await this.connection.ping()
@@ -29,6 +47,11 @@ class SchemaService {
 
   // Выполнение одного SQL-запроса
   async executeQuery(query: string): Promise<any> {
+    if (isBrowser || !mysql) {
+      console.warn('SQL запросы недоступны в браузерной среде')
+      return []
+    }
+
     if (!this.connection) {
       throw new Error('Нет подключения к базе данных')
     }

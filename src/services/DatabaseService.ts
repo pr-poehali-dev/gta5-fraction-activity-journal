@@ -1,7 +1,21 @@
-import mysql from 'mysql2/promise'
 import { DB_CONFIG, USE_MOCK_DATA } from '@/config/database'
 import { User, Faction, FactionMember, Warning, ActivityStatus, UserRole, UserPermission } from '@/components/types'
-import { schemaLoader } from './SchemaLoader'
+
+// Проверяем, находимся ли мы в браузере
+const isBrowser = typeof window !== 'undefined'
+
+// Динамический импорт mysql2 только в серверной среде
+let mysql: any = null
+let schemaLoader: any = null
+
+if (!isBrowser) {
+  try {
+    mysql = require('mysql2/promise')
+    schemaLoader = require('./SchemaLoader').schemaLoader
+  } catch (error) {
+    console.warn('mysql2 не доступен в этой среде:', error)
+  }
+}
 
 export interface ActivityLog {
   id?: number
@@ -23,7 +37,7 @@ export interface AdminAction {
 }
 
 class DatabaseService {
-  private connection: mysql.Connection | null = null
+  private connection: any = null
   private isInitialized = false
 
   // Инициализация подключения к базе данных
@@ -31,7 +45,7 @@ class DatabaseService {
     if (this.isInitialized) return
     
     try {
-      if (USE_MOCK_DATA) {
+      if (USE_MOCK_DATA || !mysql || isBrowser) {
         console.log('🔄 Используется mock-режим для демо-данных')
         this.isInitialized = true
         return
@@ -44,7 +58,9 @@ class DatabaseService {
       await this.connection.ping()
       
       // Автоматически применяем схему при первом подключении
-      await this.ensureSchemaExists()
+      if (schemaLoader) {
+        await this.ensureSchemaExists()
+      }
       
       this.isInitialized = true
       
@@ -57,7 +73,7 @@ class DatabaseService {
 
   // Проверка подключения
   async isConnected(): Promise<boolean> {
-    if (!this.connection) return false
+    if (isBrowser || !mysql || !this.connection) return false
     
     try {
       await this.connection.ping()
@@ -69,6 +85,11 @@ class DatabaseService {
 
   // Проверка и автоматическое создание схемы
   private async ensureSchemaExists(): Promise<void> {
+    if (!schemaLoader) {
+      console.log('🔄 SchemaLoader недоступен в браузерной среде')
+      return
+    }
+
     try {
       console.log('🔍 Проверка схемы базы данных...')
       
