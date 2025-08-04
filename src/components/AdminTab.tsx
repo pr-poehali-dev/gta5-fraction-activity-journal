@@ -7,8 +7,11 @@ import { Separator } from '@/components/ui/separator'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { toast } from '@/hooks/use-toast'
 import Icon from '@/components/ui/icon'
-import { User, UserRole } from './types'
+import { User, UserRole, FactionMember, Warning } from './types'
 import { authService, mockUsers } from './auth'
+import { mockFactions } from './mockData'
+import AddMemberModal from './AddMemberModal'
+import WarningModal from './WarningModal'
 
 interface AdminTabProps {
   currentUser: User
@@ -17,6 +20,10 @@ interface AdminTabProps {
 export default function AdminTab({ currentUser }: AdminTabProps) {
   const [users, setUsers] = useState(mockUsers)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [showAddMemberModal, setShowAddMemberModal] = useState(false)
+  const [showWarningModal, setShowWarningModal] = useState(false)
+  const [selectedMember, setSelectedMember] = useState<FactionMember | null>(null)
+  const [factions, setFactions] = useState(mockFactions)
 
   const canManageUsers = authService.hasPermission('admin')
   const canSystemSettings = authService.hasPermission('system')
@@ -87,13 +94,74 @@ export default function AdminTab({ currentUser }: AdminTabProps) {
     }
   }
 
+  const handleAddMember = (newMember: Omit<FactionMember, 'id'>) => {
+    const maxId = Math.max(...factions.flatMap(f => f.members.map(m => m.id)))
+    const memberWithId = { ...newMember, id: maxId + 1 }
+    
+    const factionId = parseInt(selectedUser?.factionId?.toString() || '1')
+    const updatedFactions = factions.map(faction => {
+      if (faction.id === factionId) {
+        return {
+          ...faction,
+          members: [...faction.members, memberWithId],
+          totalMembers: faction.totalMembers + 1
+        }
+      }
+      return faction
+    })
+    
+    setFactions(updatedFactions)
+  }
+
+  const handleAddWarning = (memberId: number, warning: Omit<Warning, 'id' | 'timestamp'>) => {
+    const warningWithId = {
+      ...warning,
+      id: Date.now().toString(),
+      timestamp: new Date()
+    }
+    
+    const updatedFactions = factions.map(faction => ({
+      ...faction,
+      members: faction.members.map(member => 
+        member.id === memberId 
+          ? { ...member, warnings: [...member.warnings, warningWithId] }
+          : member
+      )
+    }))
+    
+    setFactions(updatedFactions)
+  }
+
+  const handleRemoveWarning = (memberId: number, warningId: string) => {
+    const updatedFactions = factions.map(faction => ({
+      ...faction,
+      members: faction.members.map(member => 
+        member.id === memberId 
+          ? { 
+              ...member, 
+              warnings: member.warnings.map(w => 
+                w.id === warningId ? { ...w, isActive: false } : w
+              )
+            }
+          : member
+      )
+    }))
+    
+    setFactions(updatedFactions)
+  }
+
+  const openWarningModal = (member: FactionMember) => {
+    setSelectedMember(member)
+    setShowWarningModal(true)
+  }
+
   const adminActions = [
     { 
       id: 'addUser', 
       label: 'Добавить участника', 
       icon: 'UserPlus', 
       requiredPermission: 'write' as const,
-      action: () => toast({ title: 'Функция в разработке', description: 'Добавление пользователей будет доступно скоро' })
+      action: () => setShowAddMemberModal(true)
     },
     { 
       id: 'createFaction', 
@@ -321,6 +389,91 @@ export default function AdminTab({ currentUser }: AdminTabProps) {
           </ScrollArea>
         </CardContent>
       </Card>
+
+      {/* Members Management */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Icon name="Users" size={20} />
+            Управление участниками фракций
+            <Badge variant="secondary">
+              {factions.reduce((sum, f) => sum + f.totalMembers, 0)} участников
+            </Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ScrollArea className="h-[400px]">
+            <div className="space-y-4">
+              {factions.map((faction) => (
+                <div key={faction.id} className="space-y-2">
+                  <div className="flex items-center gap-2 font-medium">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: faction.color }}
+                    />
+                    {faction.name}
+                    <Badge variant="outline">{faction.totalMembers} чел.</Badge>
+                  </div>
+                  <div className="space-y-2 ml-5">
+                    {faction.members.slice(0, 5).map((member) => {
+                      const activeWarnings = member.warnings?.filter(w => w.isActive) || []
+                      return (
+                        <div key={member.id} className="p-3 border rounded-lg flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Icon name="User" size={16} className="text-muted-foreground" />
+                            <div>
+                              <div className="font-medium">{member.name}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {member.rank} • {activeWarnings.length} предупреждений
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {activeWarnings.length > 0 && (
+                              <Badge variant="destructive" className="text-xs">
+                                {activeWarnings.length}
+                              </Badge>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openWarningModal(member)}
+                            >
+                              <Icon name="AlertTriangle" size={14} className="mr-1" />
+                              Предупреждения
+                            </Button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                    {faction.members.length > 5 && (
+                      <div className="text-sm text-muted-foreground text-center py-2">
+                        ... и еще {faction.members.length - 5} участников
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </CardContent>
+      </Card>
+
+      <AddMemberModal
+        isOpen={showAddMemberModal}
+        onClose={() => setShowAddMemberModal(false)}
+        onAddMember={handleAddMember}
+        factions={factions}
+      />
+
+      <WarningModal
+        isOpen={showWarningModal}
+        onClose={() => setShowWarningModal(false)}
+        member={selectedMember}
+        currentUser={currentUser}
+        onAddWarning={handleAddWarning}
+        onRemoveWarning={handleRemoveWarning}
+      />
     </div>
   )
 }

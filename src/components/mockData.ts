@@ -8,9 +8,50 @@ export const mockFactions: Faction[] = [
     onlineMembers: 12,
     color: 'bg-blue-500',
     members: [
-      { id: 1, name: 'Джон Смит', rank: 'Шериф', status: 'online', lastSeen: 'Сейчас', totalHours: 245, weeklyHours: 28 },
-      { id: 2, name: 'Майк Джонсон', rank: 'Лейтенант', status: 'afk', lastSeen: '15 мин назад', totalHours: 180, weeklyHours: 22 },
-      { id: 3, name: 'Сара Коннор', rank: 'Сержант', status: 'offline', lastSeen: '2 часа назад', totalHours: 156, weeklyHours: 18 },
+      { 
+        id: 1, 
+        name: 'Джон Смит', 
+        rank: 'Шериф', 
+        status: 'online', 
+        lastSeen: 'Сейчас', 
+        totalHours: 245, 
+        weeklyHours: 28, 
+        warnings: [],
+        joinDate: new Date(2024, 5, 15),
+        notes: 'Опытный лидер, отличная репутация'
+      },
+      { 
+        id: 2, 
+        name: 'Майк Джонсон', 
+        rank: 'Лейтенант', 
+        status: 'afk', 
+        lastSeen: '15 мин назад', 
+        totalHours: 180, 
+        weeklyHours: 22, 
+        warnings: [
+          {
+            id: 'w1',
+            type: 'verbal',
+            reason: 'Опоздание на службу',
+            adminId: 1,
+            adminName: 'super_admin',
+            timestamp: new Date(2024, 7, 1),
+            isActive: true
+          }
+        ],
+        joinDate: new Date(2024, 6, 20)
+      },
+      { 
+        id: 3, 
+        name: 'Сара Коннор', 
+        rank: 'Сержант', 
+        status: 'offline', 
+        lastSeen: '2 часа назад', 
+        totalHours: 156, 
+        weeklyHours: 18, 
+        warnings: [],
+        joinDate: new Date(2024, 7, 5)
+      },
     ]
   },
   {
@@ -20,8 +61,38 @@ export const mockFactions: Faction[] = [
     onlineMembers: 8,
     color: 'bg-red-500',
     members: [
-      { id: 4, name: 'Винченцо Корлеоне', rank: 'Дон', status: 'online', lastSeen: 'Сейчас', totalHours: 320, weeklyHours: 35 },
-      { id: 5, name: 'Тони Сопрано', rank: 'Капо', status: 'online', lastSeen: 'Сейчас', totalHours: 280, weeklyHours: 30 },
+      { 
+        id: 4, 
+        name: 'Винченцо Корлеоне', 
+        rank: 'Дон', 
+        status: 'online', 
+        lastSeen: 'Сейчас', 
+        totalHours: 320, 
+        weeklyHours: 35,
+        warnings: [
+          {
+            id: 'w2',
+            type: 'written',
+            reason: 'Нарушение кодекса чести',
+            adminId: 1,
+            adminName: 'super_admin',
+            timestamp: new Date(2024, 6, 25),
+            isActive: true
+          }
+        ],
+        joinDate: new Date(2024, 4, 10)
+      },
+      { 
+        id: 5, 
+        name: 'Тони Сопрано', 
+        rank: 'Капо', 
+        status: 'online', 
+        lastSeen: 'Сейчас', 
+        totalHours: 280, 
+        weeklyHours: 30,
+        warnings: [],
+        joinDate: new Date(2024, 5, 1)
+      },
     ]
   },
   {
@@ -31,7 +102,36 @@ export const mockFactions: Faction[] = [
     onlineMembers: 5,
     color: 'bg-orange-500',
     members: [
-      { id: 6, name: 'Рэй Томпсон', rank: 'Президент', status: 'afk', lastSeen: '30 мин назад', totalHours: 190, weeklyHours: 25 },
+      { 
+        id: 6, 
+        name: 'Рэй Томпсон', 
+        rank: 'Президент', 
+        status: 'afk', 
+        lastSeen: '30 мин назад', 
+        totalHours: 190, 
+        weeklyHours: 25,
+        warnings: [
+          {
+            id: 'w3',
+            type: 'verbal',
+            reason: 'Неподобающее поведение в чате',
+            adminId: 1,
+            adminName: 'super_admin',
+            timestamp: new Date(2024, 7, 10),
+            isActive: true
+          },
+          {
+            id: 'w4',
+            type: 'verbal',
+            reason: 'Пропуск собрания',
+            adminId: 1,
+            adminName: 'super_admin',
+            timestamp: new Date(2024, 7, 20),
+            isActive: true
+          }
+        ],
+        joinDate: new Date(2024, 6, 15)
+      },
     ]
   }
 ]
