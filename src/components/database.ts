@@ -18,7 +18,11 @@ class UserDatabase {
   // Инициализация с демо-данными
   init(initialFactions: Faction[], initialUsers: User[]) {
     this.factions = [...initialFactions]
-    this.users = [...initialUsers]
+    // Очищаем пароли у пользователей без паролей в исходных данных
+    this.users = initialUsers.map(user => ({
+      ...user,
+      password: user.password || ''
+    }))
     this.members = this.factions.flatMap(faction => 
       faction.members.map(member => ({ ...member, factionId: faction.id }))
     )

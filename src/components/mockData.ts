@@ -18,7 +18,8 @@ export const mockFactions: Faction[] = [
         weeklyHours: 28, 
         warnings: [],
         joinDate: new Date(2024, 5, 15),
-        notes: 'Опытный лидер, отличная репутация'
+        notes: 'Опытный лидер, отличная репутация',
+        password: ''
       },
       { 
         id: 2, 
@@ -39,7 +40,8 @@ export const mockFactions: Faction[] = [
             isActive: true
           }
         ],
-        joinDate: new Date(2024, 6, 20)
+        joinDate: new Date(2024, 6, 20),
+        password: ''
       },
       { 
         id: 3, 
@@ -50,7 +52,8 @@ export const mockFactions: Faction[] = [
         totalHours: 156, 
         weeklyHours: 18, 
         warnings: [],
-        joinDate: new Date(2024, 7, 5)
+        joinDate: new Date(2024, 7, 5),
+        password: ''
       },
     ]
   },
@@ -80,7 +83,8 @@ export const mockFactions: Faction[] = [
             isActive: true
           }
         ],
-        joinDate: new Date(2024, 4, 10)
+        joinDate: new Date(2024, 4, 10),
+        password: ''
       },
       { 
         id: 5, 
@@ -91,7 +95,8 @@ export const mockFactions: Faction[] = [
         totalHours: 280, 
         weeklyHours: 30,
         warnings: [],
-        joinDate: new Date(2024, 5, 1)
+        joinDate: new Date(2024, 5, 1),
+        password: ''
       },
     ]
   },
@@ -130,7 +135,8 @@ export const mockFactions: Faction[] = [
             isActive: true
           }
         ],
-        joinDate: new Date(2024, 6, 15)
+        joinDate: new Date(2024, 6, 15),
+        password: ''
       },
     ]
   }

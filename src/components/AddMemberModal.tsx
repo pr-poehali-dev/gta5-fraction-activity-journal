@@ -21,7 +21,8 @@ export default function AddMemberModal({ isOpen, onClose, onAddMember, factions 
     name: '',
     rank: '',
     factionId: '',
-    notes: ''
+    notes: '',
+    password: ''
   })
 
   const ranks = [
@@ -36,10 +37,19 @@ export default function AddMemberModal({ isOpen, onClose, onAddMember, factions 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.name.trim() || !formData.rank || !formData.factionId) {
+    if (!formData.name.trim() || !formData.rank || !formData.factionId || !formData.password.trim()) {
       toast({
         title: 'Ошибка валидации',
-        description: 'Заполните все обязательные поля',
+        description: 'Заполните все обязательные поля (имя, фракция, звание, пароль)',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    if (formData.password.trim().length < 4) {
+      toast({
+        title: 'Слабый пароль',
+        description: 'Пароль должен содержать минимум 4 символа',
         variant: 'destructive'
       })
       return
@@ -55,7 +65,8 @@ export default function AddMemberModal({ isOpen, onClose, onAddMember, factions 
       warnings: [],
       joinDate: new Date(),
       notes: formData.notes.trim() || undefined,
-      factionId: parseInt(formData.factionId)
+      factionId: parseInt(formData.factionId),
+      password: formData.password.trim()
     }
 
     onAddMember(newMember)
@@ -70,7 +81,8 @@ export default function AddMemberModal({ isOpen, onClose, onAddMember, factions 
       name: '',
       rank: '',
       factionId: '',
-      notes: ''
+      notes: '',
+      password: ''
     })
     
     onClose()
@@ -81,7 +93,8 @@ export default function AddMemberModal({ isOpen, onClose, onAddMember, factions 
       name: '',
       rank: '',
       factionId: '',
-      notes: ''
+      notes: '',
+      password: ''
     })
     onClose()
   }
@@ -154,6 +167,18 @@ export default function AddMemberModal({ isOpen, onClose, onAddMember, factions 
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Пароль для входа *</Label>
+            <Input
+              id="password"
+              type="password"
+              value={formData.password}
+              onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+              placeholder="Создайте пароль для участника"
+              required
+            />
           </div>
 
           <div className="space-y-2">

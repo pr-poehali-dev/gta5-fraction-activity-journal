@@ -26,6 +26,7 @@ export interface FactionMember {
   warnings: Warning[]
   joinDate: Date
   notes?: string
+  password: string
 }
 
 export interface Faction {
