@@ -153,10 +153,10 @@ export default function AccountManager() {
   return (
     <div className="space-y-6">
       {/* Заголовок и статистика */}
-      <div className="flex justify-between items-center"
+      <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold"Управление аккаунтами</h2>
-          <p className="text-muted-foreground"
+          <h2 className="text-2xl font-bold">Управление аккаунтами</h2>
+          <p className="text-muted-foreground">
             Всего: {storageStats.totalAccounts} | 
             Активных: {storageStats.activeAccounts} | 
             Онлайн: {storageStats.onlineAccounts}
