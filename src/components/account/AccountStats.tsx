@@ -55,66 +55,66 @@ export default function AccountStats() {
   const topAccounts = getTopAccounts()
 
   return (
-    <div className=\"space-y-6\">
-      <div className=\"grid grid-cols-1 md:grid-cols-4 gap-4\">
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* Общая статистика */}
         <Card>
-          <CardHeader className=\"pb-2\">
-            <CardTitle className=\"text-sm font-medium text-muted-foreground\">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Всего аккаунтов
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className=\"text-2xl font-bold\">{storageStats.totalAccounts}</div>
-            <div className=\"flex items-center space-x-2 text-xs text-muted-foreground mt-1\">
-              <Icon name=\"Users\" className=\"h-3 w-3\" />
+            <div className="text-2xl font-bold">{storageStats.totalAccounts}</div>
+            <div className="flex items-center space-x-2 text-xs text-muted-foreground mt-1">
+              <Icon name="Users" className="h-3 w-3" />
               <span>Активных: {storageStats.activeAccounts}</span>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className=\"pb-2\">
-            <CardTitle className=\"text-sm font-medium text-muted-foreground\">
+          <CardHeader className="pb-2"
+            <CardTitle className="text-sm font-medium text-muted-foreground"
               Онлайн сейчас
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className=\"text-2xl font-bold text-green-600\">{storageStats.onlineAccounts}</div>
-            <div className=\"flex items-center space-x-2 text-xs text-muted-foreground mt-1\">
-              <div className=\"w-2 h-2 bg-green-500 rounded-full\" />
+            <div className="text-2xl font-bold text-green-600"{storageStats.onlineAccounts}</div>
+            <div className="flex items-center space-x-2 text-xs text-muted-foreground mt-1">
+              <div className="w-2 h-2 bg-green-500 rounded-full" />
               <span>Активные сессии: {storageStats.activeSessions}</span>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className=\"pb-2\">
-            <CardTitle className=\"text-sm font-medium text-muted-foreground\">
+          <CardHeader className="pb-2"
+            <CardTitle className="text-sm font-medium text-muted-foreground"
               Всего сессий
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className=\"text-2xl font-bold\">{storageStats.totalSessions}</div>
-            <div className=\"flex items-center space-x-2 text-xs text-muted-foreground mt-1\">
-              <Icon name=\"Clock\" className=\"h-3 w-3\" />
+            <div className="text-2xl font-bold"{storageStats.totalSessions}</div>
+            <div className="flex items-center space-x-2 text-xs text-muted-foreground mt-1">
+              <Icon name="Clock" className="h-3 w-3" />
               <span>За все время</span>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className=\"pb-2\">
-            <CardTitle className=\"text-sm font-medium text-muted-foreground\">
+          <CardHeader className="pb-2"
+            <CardTitle className="text-sm font-medium text-muted-foreground"
               Размер данных
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className=\"text-2xl font-bold\">
+            <div className="text-2xl font-bold"
               {Math.round(storageStats.storageSize / 1024)} КБ
             </div>
-            <div className=\"flex items-center space-x-2 text-xs text-muted-foreground mt-1\">
-              <Icon name=\"Database\" className=\"h-3 w-3\" />
+            <div className="flex items-center space-x-2 text-xs text-muted-foreground mt-1">
+              <Icon name="Database" className="h-3 w-3" />
               <span>LocalStorage</span>
             </div>
           </CardContent>
@@ -124,34 +124,34 @@ export default function AccountStats() {
       {/* Топ аккаунтов по времени игры */}
       <Card>
         <CardHeader>
-          <CardTitle className=\"flex items-center space-x-2\">
-            <Icon name=\"Trophy\" className=\"h-5 w-5\" />
+          <CardTitle className="flex items-center space-x-2"
+            <Icon name="Trophy" className="h-5 w-5" />
             <span>Топ аккаунтов за месяц</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
           {topAccounts.length === 0 ? (
-            <p className=\"text-muted-foreground text-center py-4\">
+            <p className="text-muted-foreground text-center py-4"
               Нет данных о времени игры
             </p>
           ) : (
-            <div className=\"space-y-3\">
+            <div className="space-y-3"
               {topAccounts.map((item, index) => (
-                <div key={item.account.id} className=\"flex items-center justify-between p-3 bg-muted rounded-lg\">
-                  <div className=\"flex items-center space-x-3\">
+                <div key={item.account.id} className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                  <div className="flex items-center space-x-3"
                     <Badge variant={index === 0 ? 'default' : 'secondary'}>
                       #{index + 1}
                     </Badge>
                     <div>
-                      <p className=\"font-medium\">{item.account.name}</p>
+                      <p className="font-medium"{item.account.name}</p>
                       {item.account.faction && (
-                        <p className=\"text-sm text-muted-foreground\">{item.account.faction}</p>
+                        <p className="text-sm text-muted-foreground"{item.account.faction}</p>
                       )}
                     </div>
                   </div>
-                  <div className=\"text-right\">
-                    <p className=\"font-mono\">{formatTime(item.stats.totalTime)}</p>
-                    <p className=\"text-sm text-muted-foreground\">
+                  <div className="text-right"
+                    <p className="font-mono"{formatTime(item.stats.totalTime)}</p>
+                    <p className="text-sm text-muted-foreground"
                       {item.stats.sessionsCount} сессий
                     </p>
                   </div>
@@ -165,30 +165,30 @@ export default function AccountStats() {
       {/* Детальная статистика выбранного аккаунта */}
       <Card>
         <CardHeader>
-          <div className=\"flex items-center justify-between\">
-            <CardTitle className=\"flex items-center space-x-2\">
-              <Icon name=\"BarChart3\" className=\"h-5 w-5\" />
+          <div className="flex items-center justify-between"
+            <CardTitle className="flex items-center space-x-2"
+              <Icon name="BarChart3" className="h-5 w-5" />
               <span>Детальная статистика</span>
             </CardTitle>
-            <div className=\"flex items-center space-x-2\">
+            <div className="flex items-center space-x-2"
               <Select value={statsPeriod.toString()} onValueChange={(value) => setStatsPeriod(Number(value))}>
-                <SelectTrigger className=\"w-32\">
+                <SelectTrigger className="w-32"
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value=\"7\">7 дней</SelectItem>
-                  <SelectItem value=\"14\">14 дней</SelectItem>
-                  <SelectItem value=\"30\">30 дней</SelectItem>
+                  <SelectItem value="7"7 дней</SelectItem>
+                  <SelectItem value="14"14 дней</SelectItem>
+                  <SelectItem value="30"30 дней</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className=\"mb-4\">
+          <div className="mb-4"
             <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
               <SelectTrigger>
-                <SelectValue placeholder=\"Выберите аккаунт\" />
+                <SelectValue placeholder="Выберите аккаунт" />
               </SelectTrigger>
               <SelectContent>
                 {accounts.map((account) => (
@@ -201,24 +201,24 @@ export default function AccountStats() {
           </div>
 
           {selectedStats ? (
-            <div className=\"grid grid-cols-1 md:grid-cols-3 gap-4\">
-              <div className=\"p-4 bg-muted rounded-lg\">
-                <h4 className=\"font-medium mb-2\">Общее время</h4>
-                <p className=\"text-2xl font-mono\">{formatTime(selectedStats.totalTime)}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4"
+              <div className="p-4 bg-muted rounded-lg"
+                <h4 className="font-medium mb-2"Общее время</h4>
+                <p className="text-2xl font-mono"{formatTime(selectedStats.totalTime)}</p>
               </div>
               
-              <div className=\"p-4 bg-muted rounded-lg\">
-                <h4 className=\"font-medium mb-2\">Среднее за сессию</h4>
-                <p className=\"text-2xl font-mono\">{formatTime(selectedStats.averageSession)}</p>
+              <div className="p-4 bg-muted rounded-lg"
+                <h4 className="font-medium mb-2"Среднее за сессию</h4>
+                <p className="text-2xl font-mono"{formatTime(selectedStats.averageSession)}</p>
               </div>
               
-              <div className=\"p-4 bg-muted rounded-lg\">
-                <h4 className=\"font-medium mb-2\">Количество сессий</h4>
-                <p className=\"text-2xl font-mono\">{selectedStats.sessionsCount}</p>
+              <div className="p-4 bg-muted rounded-lg"
+                <h4 className="font-medium mb-2"Количество сессий</h4>
+                <p className="text-2xl font-mono"{selectedStats.sessionsCount}</p>
               </div>
             </div>
           ) : (
-            <p className=\"text-muted-foreground text-center py-8\">
+            <p className="text-muted-foreground text-center py-8"
               Выберите аккаунт для просмотра статистики
             </p>
           )}
@@ -228,15 +228,15 @@ export default function AccountStats() {
       {/* Действия */}
       <Card>
         <CardHeader>
-          <CardTitle className=\"flex items-center space-x-2\">
-            <Icon name=\"Settings\" className=\"h-5 w-5\" />
+          <CardTitle className="flex items-center space-x-2"
+            <Icon name="Settings" className="h-5 w-5" />
             <span>Управление данными</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className=\"flex flex-wrap gap-2\">
-            <Button onClick={exportData} variant=\"outline\">
-              <Icon name=\"Download\" className=\"mr-2 h-4 w-4\" />
+          <div className="flex flex-wrap gap-2"
+            <Button onClick={exportData} variant="outline"
+              <Icon name="Download" className="mr-2 h-4 w-4" />
               Экспорт данных
             </Button>
             
@@ -248,9 +248,9 @@ export default function AccountStats() {
                   setSelectedAccountId('')
                 }
               }}
-              variant=\"destructive\"
+              variant="destructive"
             >
-              <Icon name=\"Trash2\" className=\"mr-2 h-4 w-4\" />
+              <Icon name="Trash2" className="mr-2 h-4 w-4" />
               Очистить все
             </Button>
           </div>
