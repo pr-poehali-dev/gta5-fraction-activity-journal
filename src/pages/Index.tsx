@@ -9,6 +9,7 @@ import { ActivityStatus, Notification, User } from '@/components/types'
 import { mockFactions, mockNotifications } from '@/components/mockData'
 import { getStatusText } from '@/components/utils'
 import { authService } from '@/components/auth'
+import { userDatabase } from '@/components/database'
 import LoginComponent from '@/components/LoginComponent'
 import Header from '@/components/Header'
 import OverviewTab from '@/components/OverviewTab'
@@ -116,32 +117,31 @@ export default function Index() {
       return
     }
 
-    // В реальном приложении здесь был бы API вызов
-    console.log(`Updating member ${memberId} in faction ${factionId} to ${newStatus}`)
-    
-    // Создаем уведомление о смене статуса
-    const faction = mockFactions.find(f => f.id === factionId)
-    const member = faction?.members.find(m => m.id === memberId)
-    
-    if (faction && member) {
-      const statusNotification: Notification = {
-        id: Date.now().toString(),
-        title: 'Изменение статуса участника',
-        message: `${member.name} из фракции "${faction.name}" сменил статус на "${getStatusText(newStatus)}"`,
-        type: newStatus === 'offline' ? 'warning' : 'info',
-        priority: 'low',
-        timestamp: new Date(),
-        read: false,
-        factionId,
-        memberId
+    // Обновляем статус в базе данных
+    if (userDatabase.updateMemberStatus(memberId, newStatus)) {
+      const member = userDatabase.getMemberById(memberId)
+      const faction = userDatabase.getFactionById(member?.factionId || 0)
+      
+      if (faction && member) {
+        const statusNotification: Notification = {
+          id: Date.now().toString(),
+          title: 'Изменение статуса участника',
+          message: `${member.name} из фракции "${faction.name}" сменил статус на "${getStatusText(newStatus)}"`,
+          type: newStatus === 'offline' ? 'warning' : 'info',
+          priority: 'low',
+          timestamp: new Date(),
+          read: false,
+          factionId,
+          memberId
+        }
+        
+        setNotifications(prev => [statusNotification, ...prev])
+        
+        toast({
+          title: statusNotification.title,
+          description: statusNotification.message,
+        })
       }
-      
-      setNotifications(prev => [statusNotification, ...prev])
-      
-      toast({
-        title: statusNotification.title,
-        description: statusNotification.message,
-      })
     }
   }
 
@@ -228,7 +228,7 @@ export default function Index() {
 
           <TabsContent value="overview" className="space-y-6">
             <OverviewTab
-              factions={mockFactions}
+              factions={userDatabase.getAllFactions()}
               totalMembers={totalMembers}
               totalOnline={totalOnline}
               onlinePercentage={onlinePercentage}
@@ -238,7 +238,7 @@ export default function Index() {
           {canViewActivity && (
             <TabsContent value="activity" className="space-y-6">
               <ActivityTab
-                factions={mockFactions}
+                factions={userDatabase.getAllFactions()}
                 updateMemberStatus={updateMemberStatus}
               />
             </TabsContent>
@@ -247,7 +247,7 @@ export default function Index() {
           {canViewFactions && (
             <TabsContent value="factions" className="space-y-6">
               <FactionsTab 
-                factions={mockFactions} 
+                factions={userDatabase.getAllFactions()} 
                 updateMemberStatus={canViewActivity ? updateMemberStatus : undefined}
               />
             </TabsContent>

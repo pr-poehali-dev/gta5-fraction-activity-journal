@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -10,8 +10,10 @@ import Icon from '@/components/ui/icon'
 import { User, UserRole, FactionMember, Warning } from './types'
 import { authService, mockUsers } from './auth'
 import { mockFactions } from './mockData'
+import { userDatabase } from './database'
 import AddMemberModal from './AddMemberModal'
 import WarningModal from './WarningModal'
+import UserManagementModal from './UserManagementModal'
 
 interface AdminTabProps {
   currentUser: User
@@ -22,8 +24,14 @@ export default function AdminTab({ currentUser }: AdminTabProps) {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [showAddMemberModal, setShowAddMemberModal] = useState(false)
   const [showWarningModal, setShowWarningModal] = useState(false)
+  const [showUserManagementModal, setShowUserManagementModal] = useState(false)
   const [selectedMember, setSelectedMember] = useState<FactionMember | null>(null)
   const [factions, setFactions] = useState(mockFactions)
+
+  // Инициализируем базу данных при первом запуске
+  useEffect(() => {
+    userDatabase.init(mockFactions, mockUsers)
+  }, [])
 
   const canManageUsers = authService.hasPermission('admin')
   const canSystemSettings = authService.hasPermission('system')
@@ -94,60 +102,20 @@ export default function AdminTab({ currentUser }: AdminTabProps) {
     }
   }
 
-  const handleAddMember = (newMember: Omit<FactionMember, 'id'>) => {
-    const maxId = Math.max(...factions.flatMap(f => f.members.map(m => m.id)))
-    const memberWithId = { ...newMember, id: maxId + 1 }
-    
-    const factionId = parseInt(selectedUser?.factionId?.toString() || '1')
-    const updatedFactions = factions.map(faction => {
-      if (faction.id === factionId) {
-        return {
-          ...faction,
-          members: [...faction.members, memberWithId],
-          totalMembers: faction.totalMembers + 1
-        }
-      }
-      return faction
-    })
-    
-    setFactions(updatedFactions)
+  const handleAddMember = (newMember: Omit<FactionMember, 'id'> & { factionId: number }) => {
+    const addedMember = userDatabase.addMember(newMember)
+    setFactions(userDatabase.getAllFactions())
+    return addedMember
   }
 
   const handleAddWarning = (memberId: number, warning: Omit<Warning, 'id' | 'timestamp'>) => {
-    const warningWithId = {
-      ...warning,
-      id: Date.now().toString(),
-      timestamp: new Date()
-    }
-    
-    const updatedFactions = factions.map(faction => ({
-      ...faction,
-      members: faction.members.map(member => 
-        member.id === memberId 
-          ? { ...member, warnings: [...member.warnings, warningWithId] }
-          : member
-      )
-    }))
-    
-    setFactions(updatedFactions)
+    userDatabase.addWarning(memberId, warning)
+    setFactions(userDatabase.getAllFactions())
   }
 
   const handleRemoveWarning = (memberId: number, warningId: string) => {
-    const updatedFactions = factions.map(faction => ({
-      ...faction,
-      members: faction.members.map(member => 
-        member.id === memberId 
-          ? { 
-              ...member, 
-              warnings: member.warnings.map(w => 
-                w.id === warningId ? { ...w, isActive: false } : w
-              )
-            }
-          : member
-      )
-    }))
-    
-    setFactions(updatedFactions)
+    userDatabase.removeWarning(memberId, warningId)
+    setFactions(userDatabase.getAllFactions())
   }
 
   const openWarningModal = (member: FactionMember) => {
@@ -162,6 +130,13 @@ export default function AdminTab({ currentUser }: AdminTabProps) {
       icon: 'UserPlus', 
       requiredPermission: 'write' as const,
       action: () => setShowAddMemberModal(true)
+    },
+    { 
+      id: 'manageAllUsers', 
+      label: 'Управление всеми пользователями', 
+      icon: 'Database', 
+      requiredPermission: 'admin' as const,
+      action: () => setShowUserManagementModal(true)
     },
     { 
       id: 'createFaction', 
@@ -473,6 +448,12 @@ export default function AdminTab({ currentUser }: AdminTabProps) {
         currentUser={currentUser}
         onAddWarning={handleAddWarning}
         onRemoveWarning={handleRemoveWarning}
+      />
+
+      <UserManagementModal
+        isOpen={showUserManagementModal}
+        onClose={() => setShowUserManagementModal(false)}
+        currentUser={currentUser}
       />
     </div>
   )
