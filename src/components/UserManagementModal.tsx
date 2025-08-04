@@ -82,6 +82,52 @@ export default function UserManagementModal({ isOpen, onClose, currentUser }: Us
     }
   }
 
+  const handleRemoveUser = (userId: number, userName: string) => {
+    // Проверяем, что не пытаемся удалить самого себя
+    if (userId === currentUser.id) {
+      toast({
+        title: 'Ошибка удаления',
+        description: 'Нельзя удалить собственный аккаунт',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    // Найдем пользователя для дополнительных проверок
+    const userToDelete = users.find(u => u.id === userId)
+    if (!userToDelete) {
+      toast({
+        title: 'Ошибка',
+        description: 'Пользователь не найден',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    // Защита от удаления super_admin
+    if (userToDelete.role === 'super_admin') {
+      toast({
+        title: 'Ошибка удаления',
+        description: 'Нельзя удалить супер-администратора',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    if (userDatabase.removeUser(userId)) {
+      toast({
+        title: 'Пользователь удален',
+        description: `${userName} был окончательно удален из системы`
+      })
+    } else {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось удалить пользователя',
+        variant: 'destructive'
+      })
+    }
+  }
+
   const getStatusColor = (status: ActivityStatus) => {
     switch (status) {
       case 'online': return 'bg-green-500'
@@ -96,8 +142,24 @@ export default function UserManagementModal({ isOpen, onClose, currentUser }: Us
       case 'admin': return 'bg-red-500 text-white'
       case 'moderator': return 'bg-orange-500 text-white'
       case 'viewer': return 'bg-blue-500 text-white'
+      case 'observer': return 'bg-slate-400 text-white'
+      case 'user': return 'bg-gray-500 text-white'
+      case 'support': return 'bg-green-500 text-white'
+      case 'developer': return 'bg-orange-500 text-white'
       default: return 'bg-gray-500 text-white'
     }
+  }
+
+  const formatTimeAgo = (date: Date) => {
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+    
+    if (diffDays === 0) return 'Сегодня'
+    if (diffDays === 1) return 'Вчера'
+    if (diffDays < 7) return `${diffDays} дн. назад`
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} нед. назад`
+    return `${Math.floor(diffDays / 30)} мес. назад`
   }
 
   const formatTimeAgo = (date: Date) => {
@@ -308,6 +370,34 @@ export default function UserManagementModal({ isOpen, onClose, currentUser }: Us
                         <Badge variant={user.isBlocked ? 'destructive' : 'secondary'}>
                           {user.isBlocked ? 'Заблокирован' : 'Активен'}
                         </Badge>
+
+                        {user.id !== currentUser.id && user.role !== 'super_admin' && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="outline" size="sm" className="text-red-600">
+                                <Icon name="Trash2" size={14} />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Удалить пользователя?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Пользователь {user.name || user.username} будет окончательно удален из системы.
+                                  Это действие нельзя отменить. Все связанные данные будут потеряны.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Отмена</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleRemoveUser(user.id, user.name || user.username)}
+                                  className="bg-red-500 hover:bg-red-600"
+                                >
+                                  Удалить навсегда
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                       </div>
                     </div>
                   </Card>

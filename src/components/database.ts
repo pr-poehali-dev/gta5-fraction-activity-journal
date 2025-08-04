@@ -228,6 +228,27 @@ class UserDatabase {
     return true
   }
 
+  removeUser(userId: number): boolean {
+    const userIndex = this.users.findIndex(u => u.id === userId)
+    if (userIndex === -1) return false
+
+    const user = this.users[userIndex]
+    
+    // Удаляем пользователя из массива
+    this.users.splice(userIndex, 1)
+    
+    // Добавляем запись в журнал активности
+    this.addActivityLog({
+      userId: userId,
+      action: 'delete',
+      details: `Пользователь "${user.name}" был удален из системы`,
+      timestamp: new Date()
+    })
+
+    this.notifyListeners()
+    return true
+  }
+
   // Фракции
   getAllFactions(): Faction[] {
     return [...this.factions]
