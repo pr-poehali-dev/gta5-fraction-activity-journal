@@ -1,21 +1,6 @@
+import mysql from 'mysql2/promise'
 import { DB_CONFIG, USE_MOCK_DATA } from '@/config/database'
 import { User, Faction, FactionMember, Warning, ActivityStatus, UserRole, UserPermission } from '@/components/types'
-
-// Проверяем, находимся ли мы в браузере
-const isBrowser = typeof window !== 'undefined'
-
-// Динамический импорт mysql2 только в серверной среде
-let mysql: any = null
-let schemaLoader: any = null
-
-if (!isBrowser) {
-  try {
-    mysql = require('mysql2/promise')
-    schemaLoader = require('./SchemaLoader').schemaLoader
-  } catch (error) {
-    console.warn('mysql2 не доступен в этой среде:', error)
-  }
-}
 
 export interface ActivityLog {
   id?: number
@@ -37,7 +22,7 @@ export interface AdminAction {
 }
 
 class DatabaseService {
-  private connection: any = null
+  private connection: mysql.Connection | null = null
   private isInitialized = false
 
   // Инициализация подключения к базе данных
@@ -45,7 +30,7 @@ class DatabaseService {
     if (this.isInitialized) return
     
     try {
-      if (USE_MOCK_DATA || !mysql || isBrowser) {
+      if (USE_MOCK_DATA) {
         console.log('🔄 Используется mock-режим для демо-данных')
         this.isInitialized = true
         return
@@ -56,12 +41,6 @@ class DatabaseService {
       
       // Проверяем доступность базы данных
       await this.connection.ping()
-      
-      // Автоматически применяем схему при первом подключении
-      if (schemaLoader) {
-        await this.ensureSchemaExists()
-      }
-      
       this.isInitialized = true
       
     } catch (error) {
@@ -73,50 +52,13 @@ class DatabaseService {
 
   // Проверка подключения
   async isConnected(): Promise<boolean> {
-    if (isBrowser || !mysql || !this.connection) return false
+    if (!this.connection) return false
     
     try {
       await this.connection.ping()
       return true
     } catch {
       return false
-    }
-  }
-
-  // Проверка и автоматическое создание схемы
-  private async ensureSchemaExists(): Promise<void> {
-    if (!schemaLoader) {
-      console.log('🔄 SchemaLoader недоступен в браузерной среде')
-      return
-    }
-
-    try {
-      console.log('🔍 Проверка схемы базы данных...')
-      
-      // Проверяем статус схемы
-      const status = await schemaLoader.checkSchemaStatus()
-      
-      if (!status.schemaValid || status.missingTables.length > 0) {
-        console.log(`⚠️ Обнаружены проблемы со схемой:`, {
-          missingTables: status.missingTables,
-          errors: status.errors
-        })
-        
-        console.log('🔄 Применяю схему из schema.sql...')
-        const result = await schemaLoader.applySchema()
-        
-        if (result.success) {
-          console.log(`✅ Схема успешно применена! Выполнено запросов: ${result.queriesExecuted}`)
-        } else {
-          console.error('❌ Ошибка применения схемы:', result.error)
-          throw new Error(`Не удалось применить схему: ${result.error}`)
-        }
-      } else {
-        console.log('✅ Схема базы данных в порядке')
-      }
-    } catch (error) {
-      console.error('❌ Ошибка проверки схемы:', error)
-      // Не прерываем инициализацию, возможно база уже настроена
     }
   }
 
@@ -525,8 +467,7 @@ class DatabaseService {
   }
 }
 
-// Экспортируем класс и синглтон
-export { DatabaseService }
+// Экспортируем синглтон
 export const databaseService = new DatabaseService()
 
 // Инициализируем при импорте

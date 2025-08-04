@@ -1,8 +1,9 @@
 export type ActivityStatus = 'online' | 'afk' | 'offline'
 export type NotificationType = 'info' | 'warning' | 'error' | 'success'
 export type NotificationPriority = 'low' | 'medium' | 'high' | 'critical'
-export type UserRole = 'viewer' | 'moderator' | 'admin' | 'super_admin'
-export type AccessLevel = 'read' | 'write' | 'admin' | 'system'
+export type UserRole = 'user' | 'moderator' | 'admin' | 'support' | 'developer' | 'viewer' | 'super_admin' | 'observer'
+export type UserPermission = 'read' | 'write' | 'moderate' | 'admin' | 'system' | 'view-only' | 'manage_permissions' | 'master_access'
+export type AccessLevel = 'read' | 'write' | 'admin' | 'system' | 'manage_permissions' | 'master_access'
 
 export interface Warning {
   id: string
@@ -25,6 +26,7 @@ export interface FactionMember {
   warnings: Warning[]
   joinDate: Date
   notes?: string
+  password: string
 }
 
 export interface Faction {
@@ -34,6 +36,8 @@ export interface Faction {
   totalMembers: number
   onlineMembers: number
   color: string
+  type?: string
+  description?: string
 }
 
 export interface Notification {
@@ -50,12 +54,21 @@ export interface Notification {
 
 export interface User {
   id: number
+  name: string
   username: string
+  password: string
   role: UserRole
+  permission: UserPermission
   factionId?: number
   isBlocked: boolean
-  permissions: AccessLevel[]
   lastLogin: Date
+  isOnline: boolean
+  lastActivity: Date
+  playTime: number
+  warnings: Warning[]
+  faction: { name: string; rank: string } | null
+  vkId?: number
+  avatar?: string
 }
 
 export interface AdminAction {

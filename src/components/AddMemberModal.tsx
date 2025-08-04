@@ -12,7 +12,7 @@ import { Faction, FactionMember } from './types'
 interface AddMemberModalProps {
   isOpen: boolean
   onClose: () => void
-  onAddMember: (member: Omit<FactionMember, 'id'>) => void
+  onAddMember: (member: Omit<FactionMember, 'id'> & { factionId: number }) => void
   factions: Faction[]
 }
 
@@ -21,7 +21,8 @@ export default function AddMemberModal({ isOpen, onClose, onAddMember, factions 
     name: '',
     rank: '',
     factionId: '',
-    notes: ''
+    notes: '',
+    password: ''
   })
 
   const ranks = [
@@ -36,16 +37,25 @@ export default function AddMemberModal({ isOpen, onClose, onAddMember, factions 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.name.trim() || !formData.rank || !formData.factionId) {
+    if (!formData.name.trim() || !formData.rank || !formData.factionId || !formData.password.trim()) {
       toast({
         title: 'Ошибка валидации',
-        description: 'Заполните все обязательные поля',
+        description: 'Заполните все обязательные поля (имя, фракция, звание, пароль)',
         variant: 'destructive'
       })
       return
     }
 
-    const newMember: Omit<FactionMember, 'id'> = {
+    if (formData.password.trim().length < 4) {
+      toast({
+        title: 'Слабый пароль',
+        description: 'Пароль должен содержать минимум 4 символа',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    const newMember: Omit<FactionMember, 'id'> & { factionId: number } = {
       name: formData.name.trim(),
       rank: formData.rank,
       status: 'offline',
@@ -54,7 +64,9 @@ export default function AddMemberModal({ isOpen, onClose, onAddMember, factions 
       weeklyHours: 0,
       warnings: [],
       joinDate: new Date(),
-      notes: formData.notes.trim() || undefined
+      notes: formData.notes.trim() || undefined,
+      factionId: parseInt(formData.factionId),
+      password: formData.password.trim()
     }
 
     onAddMember(newMember)
@@ -69,7 +81,8 @@ export default function AddMemberModal({ isOpen, onClose, onAddMember, factions 
       name: '',
       rank: '',
       factionId: '',
-      notes: ''
+      notes: '',
+      password: ''
     })
     
     onClose()
@@ -80,7 +93,8 @@ export default function AddMemberModal({ isOpen, onClose, onAddMember, factions 
       name: '',
       rank: '',
       factionId: '',
-      notes: ''
+      notes: '',
+      password: ''
     })
     onClose()
   }
@@ -153,6 +167,18 @@ export default function AddMemberModal({ isOpen, onClose, onAddMember, factions 
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Пароль для входа *</Label>
+            <Input
+              id="password"
+              type="password"
+              value={formData.password}
+              onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+              placeholder="Создайте пароль для участника"
+              required
+            />
           </div>
 
           <div className="space-y-2">

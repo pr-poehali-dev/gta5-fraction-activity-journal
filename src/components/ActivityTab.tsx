@@ -1,16 +1,18 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Icon from '@/components/ui/icon'
-import { Faction, ActivityStatus } from './types'
+import { Faction, ActivityStatus, User } from './types'
 import { getStatusColor, getStatusText } from './utils'
+import { canEditMemberStatus } from './statusPermissions'
 import StatusToggle from './StatusToggle'
 
 interface ActivityTabProps {
   factions: Faction[]
   updateMemberStatus: (factionId: number, memberId: number, newStatus: ActivityStatus) => void
+  currentUser: User
 }
 
-export default function ActivityTab({ factions, updateMemberStatus }: ActivityTabProps) {
+export default function ActivityTab({ factions, updateMemberStatus, currentUser }: ActivityTabProps) {
   return (
     <div className="space-y-6">
       <Card>
@@ -42,7 +44,9 @@ export default function ActivityTab({ factions, updateMemberStatus }: ActivityTa
                     <StatusToggle
                       currentStatus={member.status}
                       onStatusChange={(newStatus) => updateMemberStatus(faction.id, member.id, newStatus)}
+                      isOwnStatus={canEditMemberStatus(currentUser, member.id)}
                       size="sm"
+                      
                     />
                   </div>
                 </div>
