@@ -98,6 +98,32 @@ export default function NewRegistrationModal({ isOpen, onClose, onComplete }: Ne
   const [selectedRole, setSelectedRole] = useState<UserRole>('user')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isUsernameManual, setIsUsernameManual] = useState(false)
+
+  // Генерация логина на основе имени
+  const generateUsername = (name: string): string => {
+    if (!name.trim()) return ''
+    
+    // Преобразуем имя в логин
+    let baseUsername = name
+      .toLowerCase()
+      .replace(/[^a-z0-9а-я]/g, '_') // Заменяем спецсимволы на _
+      .replace(/_{2,}/g, '_') // Убираем повторяющиеся _
+      .replace(/^_|_$/g, '') // Убираем _ в начале и конце
+      .slice(0, 20) // Ограничиваем длину
+    
+    const users = userDatabase.getAllUsers()
+    let username = baseUsername
+    let counter = 1
+    
+    // Проверяем уникальность и добавляем цифры при необходимости
+    while (users.find(u => u.username === username)) {
+      username = `${baseUsername}${counter}`
+      counter++
+    }
+    
+    return username
+  }
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -106,18 +132,7 @@ export default function NewRegistrationModal({ isOpen, onClose, onComplete }: Ne
       newErrors.name = 'Введите имя'
     }
 
-    if (!formData.username.trim()) {
-      newErrors.username = 'Введите логин'
-    } else if (formData.username.length < 3) {
-      newErrors.username = 'Логин должен содержать минимум 3 символа'
-    } else {
-      // Проверяем уникальность логина
-      const users = userDatabase.getAllUsers()
-      const existingUser = users.find(u => u.username === formData.username)
-      if (existingUser) {
-        newErrors.username = 'Этот логин уже занят'
-      }
-    }
+    // Логин генерируется автоматически, поэтому проверка не нужна
 
     if (!formData.password) {
       newErrors.password = 'Введите пароль'
@@ -185,6 +200,7 @@ export default function NewRegistrationModal({ isOpen, onClose, onComplete }: Ne
       })
       setSelectedRole('user')
       setErrors({})
+      setIsUsernameManual(false)
     } catch (error) {
       toast({
         title: 'Ошибка регистрации',
@@ -197,10 +213,34 @@ export default function NewRegistrationModal({ isOpen, onClose, onComplete }: Ne
   }
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData(prev => {
+      const newData = { ...prev, [field]: value }
+      
+      // Автоматическая генерация логина при изменении имени
+      if (field === 'name' && !isUsernameManual) {
+        newData.username = generateUsername(value)
+      }
+      
+      return newData
+    })
+    
     // Убираем ошибку при вводе
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }))
+    }
+  }
+
+  const handleUsernameChange = (value: string) => {
+    setIsUsernameManual(true) // Помечаем, что логин редактируется вручную
+    handleInputChange('username', value)
+  }
+
+  const resetUsernameToAuto = () => {
+    setIsUsernameManual(false)
+    const newUsername = generateUsername(formData.name)
+    setFormData(prev => ({ ...prev, username: newUsername }))
+    if (errors.username) {
+      setErrors(prev => ({ ...prev, username: '' }))
     }
   }
 
@@ -237,17 +277,49 @@ export default function NewRegistrationModal({ isOpen, onClose, onComplete }: Ne
             </div>
 
             <div>
-              <Label htmlFor="username">Логин *</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="username">Логин *</Label>
+                {formData.name && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={resetUsernameToAuto}
+                    className="text-xs h-6 px-2"
+                  >
+                    <Icon name="RotateCcw" size={12} className="mr-1" />
+                    Авто
+                  </Button>
+                )}
+              </div>
               <Input
                 id="username"
-                placeholder="Уникальный логин для входа"
+                placeholder={formData.name ? "Генерируется автоматически" : "Сначала введите имя"}
                 value={formData.username}
-                onChange={(e) => handleInputChange('username', e.target.value)}
+                onChange={(e) => handleUsernameChange(e.target.value)}
                 className={errors.username ? 'border-red-500' : ''}
+                disabled={!formData.name && !isUsernameManual}
               />
-              {errors.username && (
-                <p className="text-sm text-red-500 mt-1">{errors.username}</p>
-              )}
+              <div className="flex items-center justify-between mt-1">
+                <div>
+                  {errors.username && (
+                    <p className="text-sm text-red-500">{errors.username}</p>
+                  )}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {isUsernameManual ? (
+                    <span className="flex items-center gap-1">
+                      <Icon name="Edit" size={10} />
+                      Ручное редактирование
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1">
+                      <Icon name="Zap" size={10} />
+                      Автогенерация
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div>
