@@ -1,12 +1,13 @@
 import { databaseService } from './DatabaseService';
 import { dataService } from './DataService';
-import type { User, ActivityLogEntry } from '../types/database';
+import type { User } from '@/components/types';
+import type { ActivityLog } from './DataService';
 
 export interface DatabaseSnapshot {
   timestamp: string;
   version: string;
   users: User[];
-  activities: ActivityLogEntry[];
+  activities: ActivityLog[];
   metadata: {
     totalUsers: number;
     totalActivities: number;

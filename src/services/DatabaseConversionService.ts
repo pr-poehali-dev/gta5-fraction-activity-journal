@@ -1,4 +1,4 @@
-import { SchemaService } from './SchemaService';
+import { schemaService } from './SchemaService';
 
 export interface ConversionResult {
   success: boolean;
@@ -29,10 +29,10 @@ export interface DatabaseCharsetInfo {
 }
 
 export class DatabaseConversionService {
-  private schemaService: SchemaService;
+  private schemaService = schemaService;
 
   constructor() {
-    this.schemaService = new SchemaService();
+    // Используем готовый экземпляр
   }
 
   /**
@@ -337,3 +337,6 @@ AND TABLE_TYPE = 'BASE TABLE';\n`;
     }
   }
 }
+
+// Экспортируем экземпляр сервиса
+export const databaseConversionService = new DatabaseConversionService()
