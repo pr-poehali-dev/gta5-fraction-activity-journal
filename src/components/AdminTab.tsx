@@ -11,6 +11,7 @@ import FactionMembersCard from './admin/FactionMembersCard'
 import AccessDeniedCard from './admin/AccessDeniedCard'
 import AdminModalsWrapper from './admin/AdminModalsWrapper'
 import PermissionsManagementModal from './admin/PermissionsManagementModal'
+import DatabaseManagement from './admin/DatabaseManagement'
 
 interface AdminTabProps {
   currentUser: User
@@ -175,6 +176,9 @@ export default function AdminTab({ currentUser }: AdminTabProps) {
         factions={factions}
         onOpenWarningModal={openWarningModal}
       />
+
+      {/* Управление базой данных - только для super_admin */}
+      {currentUser.role === 'super_admin' && <DatabaseManagement />}
 
       <AdminModalsWrapper
         showAddMemberModal={showAddMemberModal}
