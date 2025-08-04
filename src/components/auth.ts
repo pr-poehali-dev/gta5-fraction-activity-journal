@@ -37,14 +37,6 @@ export const mockUsers: User[] = [
     lastLogin: new Date(Date.now() - 1000 * 60 * 60 * 24)
   },
   {
-    id: 6,
-    username: 'observer_guest',
-    role: 'observer',
-    isBlocked: false,
-    permissions: ['view-only'],
-    lastLogin: new Date(Date.now() - 1000 * 60 * 60 * 12)
-  },
-  {
     id: 5,
     username: 'blocked_admin',
     role: 'admin',
@@ -57,11 +49,7 @@ export const mockUsers: User[] = [
 
 // Role hierarchy for access control
 export const ROLE_HIERARCHY: Record<UserRole, number> = {
-  observer: 0,
   viewer: 1,
-  user: 1,
-  support: 1,
-  developer: 2,
   moderator: 2,
   admin: 3,
   super_admin: 4
@@ -108,12 +96,6 @@ export class AuthService {
     if (!this.currentUser || this.currentUser.isBlocked) {
       return false
     }
-    
-    // Наблюдатели имеют только view-only доступ
-    if (this.currentUser.role === 'observer') {
-      return requiredAccess === 'read' || this.currentUser.permissions.includes(requiredAccess)
-    }
-    
     return this.currentUser.permissions.includes(requiredAccess)
   }
 
@@ -165,20 +147,8 @@ export class AuthService {
       user.role = newRole
       // Update permissions based on role
       switch (newRole) {
-        case 'observer':
-          user.permissions = ['view-only']
-          break
         case 'viewer':
           user.permissions = ['read']
-          break
-        case 'user':
-          user.permissions = ['read']
-          break
-        case 'support':
-          user.permissions = ['read']
-          break
-        case 'developer':
-          user.permissions = ['read', 'write']
           break
         case 'moderator':
           user.permissions = ['read', 'write']

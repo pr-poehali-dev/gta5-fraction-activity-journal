@@ -18,11 +18,7 @@ class UserDatabase {
   // Инициализация с демо-данными
   init(initialFactions: Faction[], initialUsers: User[]) {
     this.factions = [...initialFactions]
-    // Очищаем пароли у пользователей без паролей в исходных данных
-    this.users = initialUsers.map(user => ({
-      ...user,
-      password: user.password || ''
-    }))
+    this.users = [...initialUsers]
     this.members = this.factions.flatMap(faction => 
       faction.members.map(member => ({ ...member, factionId: faction.id }))
     )
@@ -224,27 +220,6 @@ class UserDatabase {
     if (userIndex === -1) return false
 
     this.users[userIndex] = { ...this.users[userIndex], ...updates }
-    this.notifyListeners()
-    return true
-  }
-
-  removeUser(userId: number): boolean {
-    const userIndex = this.users.findIndex(u => u.id === userId)
-    if (userIndex === -1) return false
-
-    const user = this.users[userIndex]
-    
-    // Удаляем пользователя из массива
-    this.users.splice(userIndex, 1)
-    
-    // Добавляем запись в журнал активности
-    this.addActivityLog({
-      userId: userId,
-      action: 'delete',
-      details: `Пользователь "${user.name}" был удален из системы`,
-      timestamp: new Date()
-    })
-
     this.notifyListeners()
     return true
   }
