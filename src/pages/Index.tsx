@@ -12,6 +12,8 @@ import { authService } from '@/components/auth'
 import { userDatabase } from '@/components/database'
 import VKAuthComponent from '@/components/VKAuthComponent'
 import RegistrationModal from '@/components/RegistrationModal'
+import NewLoginComponent from '@/components/NewLoginComponent'
+import NewRegistrationModal from '@/components/NewRegistrationModal'
 import Header from '@/components/Header'
 import OverviewTab from '@/components/OverviewTab'
 import ActivityTab from '@/components/ActivityTab'
@@ -30,7 +32,10 @@ interface VKUser {
 export default function Index() {
   const [currentUser, setCurrentUser] = useState<User | null>(authService.getCurrentUser())
   const [showRegistrationModal, setShowRegistrationModal] = useState(false)
+  const [showVKRegistrationModal, setShowVKRegistrationModal] = useState(false)
+  const [showPasswordRegistrationModal, setShowPasswordRegistrationModal] = useState(false)
   const [pendingVKUser, setPendingVKUser] = useState<VKUser | null>(null)
+  const [authMode, setAuthMode] = useState<'login' | 'vk' | 'register'>('login')
   const [selectedFaction, setSelectedFaction] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState('overview')
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications)
@@ -109,13 +114,26 @@ export default function Index() {
 
   const handleRegistrationNeeded = (vkUser: VKUser) => {
     setPendingVKUser(vkUser)
-    setShowRegistrationModal(true)
+    setShowVKRegistrationModal(true)
   }
 
-  const handleRegistrationComplete = (user: User) => {
+  const handleVKRegistrationComplete = (user: User) => {
     setCurrentUser(user)
     setPendingVKUser(null)
-    setShowRegistrationModal(false)
+    setShowVKRegistrationModal(false)
+  }
+
+  const handlePasswordRegistrationComplete = (user: User) => {
+    setCurrentUser(user)
+    setShowPasswordRegistrationModal(false)
+  }
+
+  const handleShowVKAuth = () => {
+    setAuthMode('vk')
+  }
+
+  const handleShowPasswordRegistration = () => {
+    setShowPasswordRegistrationModal(true)
   }
 
   const handleLogout = () => {
@@ -181,20 +199,38 @@ export default function Index() {
 
   // Show auth/registration if no user is authenticated
   if (!currentUser) {
+    if (authMode === 'vk') {
+      return (
+        <>
+          <VKAuthComponent 
+            onLogin={handleLogin}
+            onRegistrationNeeded={handleRegistrationNeeded}
+          />
+          <RegistrationModal
+            isOpen={showVKRegistrationModal}
+            onClose={() => {
+              setShowVKRegistrationModal(false)
+              setPendingVKUser(null)
+              setAuthMode('login')
+            }}
+            vkUser={pendingVKUser}
+            onComplete={handleVKRegistrationComplete}
+          />
+        </>
+      )
+    }
+
     return (
       <>
-        <VKAuthComponent 
+        <NewLoginComponent 
           onLogin={handleLogin}
-          onRegistrationNeeded={handleRegistrationNeeded}
+          onVKAuth={handleShowVKAuth}
+          onRegister={handleShowPasswordRegistration}
         />
-        <RegistrationModal
-          isOpen={showRegistrationModal}
-          onClose={() => {
-            setShowRegistrationModal(false)
-            setPendingVKUser(null)
-          }}
-          vkUser={pendingVKUser}
-          onComplete={handleRegistrationComplete}
+        <NewRegistrationModal
+          isOpen={showPasswordRegistrationModal}
+          onClose={() => setShowPasswordRegistrationModal(false)}
+          onComplete={handlePasswordRegistrationComplete}
         />
       </>
     )
