@@ -2,25 +2,21 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import Icon from '@/components/ui/icon'
-import { ActivityStatus, User } from './types'
+import { ActivityStatus } from './types'
 
 interface StatusToggleProps {
   currentStatus: ActivityStatus
   onStatusChange: (newStatus: ActivityStatus) => void
   disabled?: boolean
   size?: 'sm' | 'md' | 'lg'
-  isOwnStatus?: boolean
 }
 
 export default function StatusToggle({ 
   currentStatus, 
   onStatusChange, 
   disabled = false,
-  size = 'md',
-  isOwnStatus = true
+  size = 'md'
 }: StatusToggleProps) {
-  
-  const isDisabled = disabled || !isOwnStatus
   
   const getStatusConfig = (status: ActivityStatus) => {
     switch (status) {
@@ -69,7 +65,7 @@ export default function StatusToggle({
     lg: 16
   }
 
-  if (isDisabled) {
+  if (disabled) {
     return (
       <Badge 
         variant="outline" 

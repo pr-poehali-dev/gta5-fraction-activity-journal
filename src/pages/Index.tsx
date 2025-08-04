@@ -10,18 +10,14 @@ import { mockFactions, mockNotifications } from '@/components/mockData'
 import { getStatusText } from '@/components/utils'
 import { authService } from '@/components/auth'
 import { userDatabase } from '@/components/database'
-import AuthGuard from '@/components/AuthGuard'
 import VKAuthComponent from '@/components/VKAuthComponent'
 import RegistrationModal from '@/components/RegistrationModal'
-import NewLoginComponent from '@/components/NewLoginComponent'
-import NewRegistrationModal from '@/components/NewRegistrationModal'
 import Header from '@/components/Header'
 import OverviewTab from '@/components/OverviewTab'
 import ActivityTab from '@/components/ActivityTab'
 import FactionsTab from '@/components/FactionsTab'
 import NotificationsTab from '@/components/NotificationsTab'
 import AdminTab from '@/components/AdminTab'
-import AccountManager from '@/components/account/AccountManager'
 
 interface VKUser {
   id: number
@@ -34,10 +30,7 @@ interface VKUser {
 export default function Index() {
   const [currentUser, setCurrentUser] = useState<User | null>(authService.getCurrentUser())
   const [showRegistrationModal, setShowRegistrationModal] = useState(false)
-  const [showVKRegistrationModal, setShowVKRegistrationModal] = useState(false)
-  const [showPasswordRegistrationModal, setShowPasswordRegistrationModal] = useState(false)
   const [pendingVKUser, setPendingVKUser] = useState<VKUser | null>(null)
-  const [authMode, setAuthMode] = useState<'login' | 'vk' | 'register'>('login')
   const [selectedFaction, setSelectedFaction] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState('overview')
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications)
@@ -116,26 +109,13 @@ export default function Index() {
 
   const handleRegistrationNeeded = (vkUser: VKUser) => {
     setPendingVKUser(vkUser)
-    setShowVKRegistrationModal(true)
+    setShowRegistrationModal(true)
   }
 
-  const handleVKRegistrationComplete = (user: User) => {
+  const handleRegistrationComplete = (user: User) => {
     setCurrentUser(user)
     setPendingVKUser(null)
-    setShowVKRegistrationModal(false)
-  }
-
-  const handlePasswordRegistrationComplete = (user: User) => {
-    setCurrentUser(user)
-    setShowPasswordRegistrationModal(false)
-  }
-
-  const handleShowVKAuth = () => {
-    setAuthMode('vk')
-  }
-
-  const handleShowPasswordRegistration = () => {
-    setShowPasswordRegistrationModal(true)
+    setShowRegistrationModal(false)
   }
 
   const handleLogout = () => {
@@ -157,19 +137,6 @@ export default function Index() {
         variant: 'destructive'
       })
       return
-    }
-
-    // Для observer - можно менять статус только себе
-    if (currentUser?.role === 'observer') {
-      const member = userDatabase.getMemberById(memberId)
-      if (!member || member.userId !== currentUser.id) {
-        toast({
-          title: 'Доступ запрещен',
-          description: 'Наблюдатель может изменять статус только себе',
-          variant: 'destructive'
-        })
-        return
-      }
     }
 
     // Обновляем статус в базе данных
@@ -214,61 +181,42 @@ export default function Index() {
 
   // Show auth/registration if no user is authenticated
   if (!currentUser) {
-    if (authMode === 'vk') {
-      return (
-        <>
-          <VKAuthComponent 
-            onLogin={handleLogin}
-            onRegistrationNeeded={handleRegistrationNeeded}
-          />
-          <RegistrationModal
-            isOpen={showVKRegistrationModal}
-            onClose={() => {
-              setShowVKRegistrationModal(false)
-              setPendingVKUser(null)
-              setAuthMode('login')
-            }}
-            vkUser={pendingVKUser}
-            onComplete={handleVKRegistrationComplete}
-          />
-        </>
-      )
-    }
-
     return (
       <>
-        <NewLoginComponent 
+        <VKAuthComponent 
           onLogin={handleLogin}
-          onVKAuth={handleShowVKAuth}
-          onRegister={handleShowPasswordRegistration}
+          onRegistrationNeeded={handleRegistrationNeeded}
         />
-        <NewRegistrationModal
-          isOpen={showPasswordRegistrationModal}
-          onClose={() => setShowPasswordRegistrationModal(false)}
-          onComplete={handlePasswordRegistrationComplete}
+        <RegistrationModal
+          isOpen={showRegistrationModal}
+          onClose={() => {
+            setShowRegistrationModal(false)
+            setPendingVKUser(null)
+          }}
+          vkUser={pendingVKUser}
+          onComplete={handleRegistrationComplete}
         />
       </>
     )
   }
 
   return (
-    <AuthGuard currentUser={currentUser}>
-      <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
-        <div className="container mx-auto p-6 space-y-8">
-          <Header
-            notifications={notifications}
-            unreadNotifications={unreadNotifications}
-            criticalNotifications={criticalNotifications}
-            showNotifications={showNotifications}
-            setShowNotifications={setShowNotifications}
-            markNotificationAsRead={markNotificationAsRead}
-            markAllAsRead={markAllAsRead}
-            currentUser={currentUser!}
-            onLogout={handleLogout}
-          />
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+      <div className="container mx-auto p-6 space-y-8">
+        <Header
+          notifications={notifications}
+          unreadNotifications={unreadNotifications}
+          criticalNotifications={criticalNotifications}
+          showNotifications={showNotifications}
+          setShowNotifications={setShowNotifications}
+          markNotificationAsRead={markNotificationAsRead}
+          markAllAsRead={markAllAsRead}
+          currentUser={currentUser}
+          onLogout={handleLogout}
+        />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 lg:w-[900px] mx-auto">
+          <TabsList className="grid w-full grid-cols-5 lg:w-[750px] mx-auto">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Icon name="BarChart3" size={16} />
               Обзор
@@ -306,15 +254,6 @@ export default function Index() {
               {!canViewNotifications && <Icon name="Lock" size={12} />}
             </TabsTrigger>
             <TabsTrigger 
-              value="accounts" 
-              className="flex items-center gap-2"
-              disabled={!canViewFactions}
-            >
-              <Icon name="UserCog" size={16} />
-              Аккаунты
-              {!canViewFactions && <Icon name="Lock" size={12} />}
-            </TabsTrigger>
-            <TabsTrigger 
               value="admin" 
               className="flex items-center gap-2"
               disabled={!canAccessAdmin}
@@ -339,7 +278,6 @@ export default function Index() {
               <ActivityTab
                 factions={userDatabase.getAllFactions()}
                 updateMemberStatus={updateMemberStatus}
-                currentUser={currentUser}
               />
             </TabsContent>
           )}
@@ -349,7 +287,6 @@ export default function Index() {
               <FactionsTab 
                 factions={userDatabase.getAllFactions()} 
                 updateMemberStatus={canViewActivity ? updateMemberStatus : undefined}
-                currentUser={currentUser}
               />
             </TabsContent>
           )}
@@ -367,23 +304,14 @@ export default function Index() {
             </TabsContent>
           )}
 
-          {canViewFactions && (
-            <TabsContent value="accounts" className="space-y-6">
-              <AccountManager />
-            </TabsContent>
-          )}
-
           {canAccessAdmin && (
             <TabsContent value="admin" className="space-y-6">
-              <AuthGuard currentUser={currentUser} requiredPermission="admin">
-                <AdminTab currentUser={currentUser!} />
-              </AuthGuard>
+              <AdminTab currentUser={currentUser} />
             </TabsContent>
           )}
         </Tabs>
-        </div>
-        <Toaster />
       </div>
-    </AuthGuard>
+      <Toaster />
+    </div>
   )
 }
